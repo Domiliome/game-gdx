@@ -1,35 +1,57 @@
-# SimpleGame
+# SimpleGame 🎮
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+Кроссплатформенная 2D-игра на Java с использованием фреймворка [libGDX](https://libgdx.com/). Проект создан на базе шаблона `gdx-liftoff` и кастомизирован под вертикальный портретный режим с физикой инерции и соударений.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## 🚀 Особенности текущей версии
+- **Разделение логики (ООП):** Вся физика и логика поведения инкапсулирована в отдельные автономные классы объектов (`RedBall.java`, `GreenBall.java`).
+- **Продвинутый Drag and Drop:** Шары плавно и эластично увеличиваются на 70% строго по центру в момент захвата пальцем/мышкой и сдуваются при отпускании.
+- **Физика инерции и отскоков:** Шары сохраняют скорость движения курсора, реалистично катятся по полю с учетом трения и отскакивают от границ.
+- **Реалистичные столкновения:** Реализована математика упругого соударения окружностей с учетом их условной массы (размера). Шары передают импульс и корректно отлетают друг от друга.
+- **Адаптивный экран:** Игровое поле автоматически подстраивается под пропорции любых вытянутых смартфонов благодаря `ExtendViewport` и имеет фиксированную рамку-барьер с отступом в 20 пикселей.
 
-## Platforms
+---
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
-- `android`: Android mobile platform. Needs Android SDK.
+## 📂 Структура проекта
 
-## Gradle
+- `core`: Главный модуль, содержащий всю общую игровую логику, классы шаров и главный цикл (`Main.java`).
+- `lwjgl3`: Десктопная платформа (ПК) на базе LWJGL3. Настроена на вертикальное стартовое окно 480x800.
+- `android`: Мобильная платформа под Android. Насильно зафиксирована в портретной ориентации (`portrait`).
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+---
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `android:lint`: performs Android project validation.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+## 💻 Полезные консольные команды (Gradle)
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+Проект использует Gradle Wrapper. Запускайте команды из корневой папки проекта.
+
+### Запуск и тестирование
+*   **Запуск игры на ПК (Десктоп):**
+    ```bash
+    ./gradlew lwjgl3:run
+    ```
+*   **Сборка и автоматический запуск на Android (через USB):**
+    ```bash
+    ./gradlew android:installDebug android:run
+    ```
+
+### Очистка и сборка
+*   **Полная очистка кэша сборщика (помогает при ошибках метаданных):**
+    ```bash
+    ./gradlew clean
+    ```
+*   **Сборка готового исполняемого .JAR файла для ПК:**
+    ```bash
+    ./gradlew lwjgl3:jar
+    ```
+    *(Готовый файл появится по пути `lwjgl3/build/libs/`)*
+
+---
+
+## 🛠️ Ежедневный цикл работы с Git / GitHub
+
+Если вы внесли изменения в код и хотите отправить их в этот репозиторий, выполните в консоли:
+
+```bash
+git add .
+git commit -m "Опишите кратко, что вы изменили (например: Добавил обработку столкновений)"
+git push
+```
