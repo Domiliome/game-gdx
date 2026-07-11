@@ -116,7 +116,7 @@ public class Main extends ApplicationAdapter {
             float rvx = greenBall.getVx() - redBall.getVx();
             float rvy = greenBall.getVy() - redBall.getVy();
 
-            // Проекция速度 на вектор удара
+
             float velAlongNormal = rvx * nx + rvy * ny;
 
             // Считаем отскок только если они летят НАВСТРЕЧУ друг другу, а не РАЗЛЕТАЮТСЯ
