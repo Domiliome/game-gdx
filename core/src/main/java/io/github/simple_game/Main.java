@@ -70,10 +70,18 @@ public class Main extends ApplicationAdapter {
         redBall.draw(shapeRenderer);
         greenBall.draw(shapeRenderer);
 
-        // Рисуем белую рамку поля
+        // Рисуем рамки и линии игрового поля
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1f, 1f, 1f, 1f);
+
+        // 1. Рисуем внешнюю белую рамку поля
         shapeRenderer.rect(PADDING, PADDING, viewport.getWorldWidth() - (PADDING * 2f), viewport.getWorldHeight() - (PADDING * 2f));
+
+        // 2. ДОБАВЛЕНО: Рисуем полупрозрачную разделительную линию на уровне 1/3 экрана
+        shapeRenderer.setColor(1f, 1f, 1f, 0.3f); // Слегка тусклый белый цвет (alpha = 0.3)
+        float lineY = viewport.getWorldHeight() / 3f;
+        shapeRenderer.line(PADDING, lineY, viewport.getWorldWidth() - PADDING, lineY);
+
         shapeRenderer.end();
     }
 
@@ -108,7 +116,7 @@ public class Main extends ApplicationAdapter {
             float rvx = greenBall.getVx() - redBall.getVx();
             float rvy = greenBall.getVy() - redBall.getVy();
 
-            // Проекция скорости на вектор удара
+            // Проекция速度 на вектор удара
             float velAlongNormal = rvx * nx + rvy * ny;
 
             // Считаем отскок только если они летят НАВСТРЕЧУ друг другу, а не РАЗЛЕТАЮТСЯ

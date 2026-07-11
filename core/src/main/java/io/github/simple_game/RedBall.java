@@ -15,6 +15,8 @@ public class RedBall {
     private final float FRICTION = 0.97f;
     private final float BOUNCE = 0.7f;
 
+    private final float GRAVITY = -800f;
+
     private final float BASE_RADIUS = 32f;
     private float currentRadius;
     private float targetRadius;
@@ -26,16 +28,14 @@ public class RedBall {
     private float offsetY;
     private final Vector3 touchPoint;
 
-    // ДОБАВЛЕНО: Шарик теперь сам хранит ссылки на вьюпорт экрана и размер отступа
     private final Viewport viewport;
     private final float padding;
 
-    // ИЗМЕНЕНО: Конструктор теперь принимает viewport и padding при создании
     public RedBall(float startX, float startY, Viewport viewport, float padding) {
         this.centerX = startX;
         this.centerY = startY;
-        this.viewport = viewport; // Запоминаем вьюпорт
-        this.padding = padding;   // Запоминаем отступ
+        this.viewport = viewport;
+        this.padding = padding;
 
         this.currentRadius = BASE_RADIUS;
         this.targetRadius = BASE_RADIUS;
@@ -44,22 +44,19 @@ public class RedBall {
         this.touchPoint = new Vector3();
     }
 
-
     public void update(float step) {
         float deltaTime = Gdx.graphics.getDeltaTime();
         currentRadius = MathUtils.lerp(currentRadius, targetRadius, ANIMATION_SPEED * deltaTime);
 
-        // Проверяем, касается ли палец экрана вообще
         if (Gdx.input.isTouched()) {
             touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             viewport.unproject(touchPoint);
 
             if (!isDragging) {
-                // Вычисляем хитбокс
                 bounds.set(centerX - currentRadius, centerY - currentRadius, currentRadius * 2f, currentRadius * 2f);
 
-                // Если попали точно по шару — включаем таскание
-                if (bounds.contains(touchPoint.x, touchPoint.y)) {
+                // Схватить шар можно только в нижней трети экрана
+                if (bounds.contains(touchPoint.x, touchPoint.y) && touchPoint.y < (viewport.getWorldHeight() / 3f)) {
                     isDragging = true;
                     offsetX = touchPoint.x - centerX;
                     offsetY = touchPoint.y - centerY;
@@ -68,37 +65,55 @@ public class RedBall {
                 }
             }
         } else {
-            // Если экран не трогают — выключаем драг
             if (isDragging) {
                 isDragging = false;
             }
         }
 
         if (isDragging) {
-            // Если мы УСПЕШНО ТАЩИМ шар:
-            targetRadius = BASE_RADIUS * 1.7f; // Увеличиваем размер
+            targetRadius = BASE_RADIUS * 1.7f;
 
             float oldCenterX = centerX;
             float oldCenterY = centerY;
 
-            centerX = MathUtils.clamp(touchPoint.x - offsetX, padding + currentRadius, viewport.getWorldWidth() - padding - currentRadius);
-            centerY = MathUtils.clamp(touchPoint.y - offsetY, padding + currentRadius, viewport.getWorldHeight() - padding - currentRadius);
+            // Вычисляем желаемые координаты, куда пользователь тянет шар
+            float desiredX = touchPoint.x - offsetX;
+            float desiredY = touchPoint.y - offsetY;
 
+            // Жесткое ограничение по оси X (не даем выйти за левый/правый края)
+            centerX = MathUtils.clamp(desiredX, padding + currentRadius, viewport.getWorldWidth() - padding - currentRadius);
+
+            // МЯГКОЕ ОГРАНИЧЕНИЕ ПО ОСИ Y (Эффект резины)
+            float maxAllowedY = (viewport.getWorldHeight() / 3f) - padding - currentRadius;
+            float minY = padding + currentRadius;
+
+            if (desiredY <= maxAllowedY) {
+                // Если палец в пределах нижней трети — шар следует за ним идеально
+                centerY = MathUtils.clamp(desiredY, minY, maxAllowedY);
+            } else {
+                // Если палец ушел выше линии 1/3, включаем "резиновое натяжение" (lerp)
+                // Шар плавно замедляется и упирается, но ПРОДОЛЖАЕТ немного сдвигаться вверх за пальцем,
+                // что позволяет рассчитать скорость броска (vy)!
+                float rubberY = MathUtils.lerp(maxAllowedY, desiredY, 0.15f); // 0.15f - коэффициент растяжения резины
+
+                // Не даем резинке растянуться выше, чем на +50 пикселей от линии
+                centerY = MathUtils.clamp(rubberY, maxAllowedY, maxAllowedY + 50f);
+            }
+
+            // Рассчитываем скорость взмаха. Теперь vy не будет равна 0 при броске через линию!
             vx = (centerX - oldCenterX) / step;
             vy = (centerY - oldCenterY) / step;
-        } else {
-            // ЕСЛИ ПАЛЕЦ О ТПУЩЕН ИЛИ НАЖАТ МИМО ШАРА:
-            // Физика свободного качения ДОЛЖНА продолжать работать!
-            targetRadius = BASE_RADIUS; // Сдуваем обратно до нормы
 
+        } else {
+            targetRadius = BASE_RADIUS;
+
+            vy += GRAVITY * step;
             centerX += vx * step;
             centerY += vy * step;
 
-            // Трение
             vx *= Math.pow(FRICTION, step * 60);
             vy *= Math.pow(FRICTION, step * 60);
 
-            // Отскоки от стен рамки поля
             float minX = padding + currentRadius;
             float maxX = viewport.getWorldWidth() - padding - currentRadius;
             if (centerX < minX) { centerX = minX; vx = -vx * BOUNCE; }
@@ -106,11 +121,26 @@ public class RedBall {
 
             float minY = padding + currentRadius;
             float maxY = viewport.getWorldHeight() - padding - currentRadius;
-            if (centerY < minY) { centerY = minY; vy = -vy * BOUNCE; }
-            else if (centerY > maxY) { centerY = maxY; vy = -vy * BOUNCE; }
+            if (ballCenterYCheck(minY, maxY)) {
+                // Отскоки от пола и потолка всего экрана
+            }
         }
     }
 
+    private boolean ballCenterYCheck(float minY, float maxY) {
+        if (centerY < minY) {
+            centerY = minY;
+            vy = -vy * BOUNCE;
+            if (Math.abs(vy) < 20f) vy = 0f;
+            return true;
+        }
+        else if (centerY > maxY) {
+            centerY = maxY;
+            vy = -vy * BOUNCE;
+            return true;
+        }
+        return false;
+    }
 
     public void draw(ShapeRenderer shapeRenderer) {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -119,19 +149,15 @@ public class RedBall {
         shapeRenderer.end();
     }
 
-    // === МЕТОДЫ ДЛЯ ВЗАИМОДЕЙСТВИЯ (ГЕТТЕРЫ И СЕТТЕРЫ) ===
     public float getCenterX() { return centerX; }
     public float getCenterY() { return centerY; }
     public float getCurrentRadius() { return currentRadius; }
     public float getVx() { return vx; }
     public float getVy() { return vy; }
-
     public void setVx(float vx) { this.vx = vx; }
     public void setVy(float vy) { this.vy = vy; }
-
     public void setPosition(float x, float y) {
         this.centerX = x;
         this.centerY = y;
     }
-
 }
