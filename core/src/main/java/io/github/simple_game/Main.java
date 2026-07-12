@@ -15,9 +15,13 @@ public class Main extends ApplicationAdapter {
     private OrthographicCamera camera;
     private Viewport viewport;
 
-
+    // Две независимые ссылки на разные классы шаров
     private RedBall redBall;
     private GreenBall greenBall;
+
+    // ДОБАВЛЕНО: Объект зоны продажи и переменная баланса игрока
+    private ShopZone shopZone;
+    private int money = 0;
 
     private final float WORLD_WIDTH = 480f;
     private final float WORLD_HEIGHT = 800f;
@@ -36,6 +40,9 @@ public class Main extends ApplicationAdapter {
         // Инициализируем каждый шар своим классом
         redBall = new RedBall(WORLD_WIDTH / 2f - 80f, WORLD_HEIGHT / 2f, viewport, PADDING);
         greenBall = new GreenBall(WORLD_WIDTH / 2f + 80f, WORLD_HEIGHT / 2f, viewport, PADDING);
+
+        // ДОБАВЛЕНО: Создаем зону продажи в углу с размером 80 на 80 пикселей
+        shopZone = new ShopZone(PADDING, 80f);
     }
 
     @Override
@@ -50,8 +57,23 @@ public class Main extends ApplicationAdapter {
             redBall.update(TIME_STEP);
             greenBall.update(TIME_STEP);
 
-            // ДОБАВЛЕНО: Проверяем и обрабатываем столкновение шаров между собой
+            // Проверяем и обрабатываем столкновение шаров между собой
             checkBallCollision();
+
+            // ДОБАВЛЕНО: Проверяем, попал ли салатовый шар в зону продажи
+            if (shopZone.checkCollision(greenBall)) {
+                money += 10; // Зачисляем валюту
+                Gdx.app.log("GAME", "Салатовый шар продан! Текущий баланс: " + money);
+
+                // Телепортируем салатовый шар обратно в правый верхний угол игрового поля
+                float startX = viewport.getWorldWidth() / 2f + 80f;
+                float startY = viewport.getWorldHeight() - PADDING - 100f;
+                greenBall.setPosition(startX, startY);
+
+                // Сбрасываем его скорость для плавного нового падения
+                greenBall.setVx(0f);
+                greenBall.setVy(0f);
+            }
 
             physicsAccumulator -= TIME_STEP;
         }
@@ -66,7 +88,10 @@ public class Main extends ApplicationAdapter {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // Отрисовываем шары
+        // ДОБАВЛЕНО: Рисуем заполненную зеленым цветом зону продажи
+        shopZone.draw(shapeRenderer);
+
+        // Отрисовываем шары поверх зоны
         redBall.draw(shapeRenderer);
         greenBall.draw(shapeRenderer);
 
@@ -77,57 +102,41 @@ public class Main extends ApplicationAdapter {
         // 1. Рисуем внешнюю белую рамку поля
         shapeRenderer.rect(PADDING, PADDING, viewport.getWorldWidth() - (PADDING * 2f), viewport.getWorldHeight() - (PADDING * 2f));
 
-        // 2. ДОБАВЛЕНО: Рисуем полупрозрачную разделительную линию на уровне 1/3 экрана
-        shapeRenderer.setColor(1f, 1f, 1f, 0.3f); // Слегка тусклый белый цвет (alpha = 0.3)
+        // 2. Рисуем полупрозрачную разделительную линию на уровне 1/3 экрана
+        shapeRenderer.setColor(1f, 1f, 1f, 0.3f);
         float lineY = viewport.getWorldHeight() / 3f;
         shapeRenderer.line(PADDING, lineY, viewport.getWorldWidth() - PADDING, lineY);
 
         shapeRenderer.end();
     }
 
-    // ДОБАВЛЕНО: Математический метод обработки упругого соударения двух окружностей
     private void checkBallCollision() {
-        // Расстояние между центрами по осям X и Y
         float dx = greenBall.getCenterX() - redBall.getCenterX();
         float dy = greenBall.getCenterY() - redBall.getCenterY();
 
-        // Квадрат расстояния и само расстояние (Теорема Пифагора)
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
-
-        // Минимальное расстояние, при котором шары касаются друг друга
         float minDistance = redBall.getCurrentRadius() + greenBall.getCurrentRadius();
 
-        // Если шары зашли друг за друга — фиксируем удар
         if (distance < minDistance) {
-            if (distance == 0) return; // Защита от деления на ноль, если центры совпали
+            if (distance == 0) return;
 
-            // Вектор нормали столкновения (направление удара)
             float nx = dx / distance;
             float ny = dy / distance;
 
-            // Величина наложения шаров друг на друга
             float overlap = minDistance - distance;
 
-            // Расталкиваем шары наружу, чтобы они мгновенно вышли из зацепления и не слипались
             redBall.setPosition(redBall.getCenterX() - nx * overlap * 0.5f, redBall.getCenterY() - ny * overlap * 0.5f);
             greenBall.setPosition(greenBall.getCenterX() + nx * overlap * 0.5f, greenBall.getCenterY() + ny * overlap * 0.5f);
 
-            // Вычисляем относительную скорость шаров
             float rvx = greenBall.getVx() - redBall.getVx();
             float rvy = greenBall.getVy() - redBall.getVy();
 
-
             float velAlongNormal = rvx * nx + rvy * ny;
 
-            // Считаем отскок только если они летят НАВСТРЕЧУ друг другу, а не РАЗЛЕТАЮТСЯ
             if (velAlongNormal < 0) {
-                // Прыгучесть при ударе шаров (0.8f — сохраняет 80% энергии)
                 float restitution = 0.8f;
-
-                // Импульс силы
                 float impulseScalar = -(1 + restitution) * velAlongNormal;
 
-                // Распределяем силу с учетом размеров (массы) шаров
                 float redMass = redBall.getCurrentRadius();
                 float greenMass = greenBall.getCurrentRadius();
                 float totalMass = redMass + greenMass;
@@ -135,7 +144,6 @@ public class Main extends ApplicationAdapter {
                 float impulseX = (impulseScalar * nx) / totalMass;
                 float impulseY = (impulseScalar * ny) / totalMass;
 
-                // Передаем новые скорости в оба класса через сеттеры
                 redBall.setVx(redBall.getVx() - greenMass * impulseX);
                 redBall.setVy(redBall.getVy() - greenMass * impulseY);
 
