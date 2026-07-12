@@ -122,7 +122,7 @@ public class RedBall {
             float minY = padding + currentRadius;
             float maxY = viewport.getWorldHeight() - padding - currentRadius;
             if (ballCenterYCheck(minY, maxY)) {
-                // Отскоки от пола и потолка всего экрана
+
             }
         }
     }

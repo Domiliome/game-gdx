@@ -16,10 +16,10 @@ public class GreenBall {
     private float vy = 0f;
     private final float FRICTION = 0.97f;
 
-    // ЖЕСТКАЯ НАСТРОЙКА: Салатовый шар очень прыгучий (теряет всего 10% скорости)
+
     private final float BOUNCE = 0.9f;
 
-    // ЖЕСТКАЯ НАСТРОЙКА: Радиус меньше, чем у красного (20 пикселей)
+
     private final float BASE_RADIUS = 20f;
     private float currentRadius;
     private float targetRadius;
@@ -34,7 +34,7 @@ public class GreenBall {
     private final Viewport viewport;
     private final float padding;
 
-    // ЖЕСТКАЯ НАСТРОЙКА: Не слишком яркий салатовый цвет
+
     private final Color ballColor = new Color(0.55f, 0.85f, 0.35f, 1f);
 
     public GreenBall(float startX, float startY, Viewport viewport, float padding) {

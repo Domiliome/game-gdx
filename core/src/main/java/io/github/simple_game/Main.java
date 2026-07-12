@@ -15,7 +15,7 @@ public class Main extends ApplicationAdapter {
     private OrthographicCamera camera;
     private Viewport viewport;
 
-    // Две независимые ссылки на разные классы шаров
+
     private RedBall redBall;
     private GreenBall greenBall;
 
