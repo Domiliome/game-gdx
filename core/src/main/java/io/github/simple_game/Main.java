@@ -105,7 +105,6 @@ public class Main extends ApplicationAdapter {
         float textX = PADDING + 20f;
         float textY = viewport.getWorldHeight() - PADDING - 20f;
 
-        // ИСПРАВЛЕНО: Выводим текст исключительно на английском языке, чтобы избежать квадратов
         font.draw(batch, "Coins: " + money, textX, textY);
 
         batch.end();
