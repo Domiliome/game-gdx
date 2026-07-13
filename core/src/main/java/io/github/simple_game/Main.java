@@ -2,7 +2,7 @@ package io.github.simple_game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera; // ДОБАВЛЕНО: Для настройки сглаживания текстур
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -42,15 +42,10 @@ public class Main extends ApplicationAdapter {
         greenBall = new GreenBall(WORLD_WIDTH / 2f + 80f, WORLD_HEIGHT / 2f, viewport, PADDING);
         shopZone = new ShopZone(PADDING, 80f);
 
-        // ИСПРАВЛЕНО: Инициализируем стандартный встроенный шрифт (только английский)
         font = new BitmapFont();
-        font.setColor(1f, 1f, 1f, 1f); // Чисто белый цвет
+        font.setColor(1f, 1f, 1f, 1f);
 
-        // ИСПРАВЛЕНО: Включаем билинейную фильтрацию текстуры шрифта.
-        // Это уберет пиксельные квадраты вокруг букв и сделает их гладкими и четкими!
         font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        // Слегка увеличиваем шрифт. Коэффициент 1.5f со сглаживанием выглядит отлично
         font.getData().setScale(1.5f);
     }
 
@@ -66,15 +61,21 @@ public class Main extends ApplicationAdapter {
             greenBall.update(TIME_STEP);
             checkBallCollision();
 
+            // ИСПРАВЛЕНО: Предотвращаем бесконечное начисление очков за один пролет
             if (shopZone.checkCollision(greenBall)) {
-                money += 10;
-                Gdx.app.log("GAME", "Green ball sold! Current balance: " + money);
+                // Проверяем, что шар действительно внизу, а не только что телепортировался вверх
+                if (greenBall.getCenterY() < viewport.getWorldHeight() / 3f) {
+                    money += 10;
+                    Gdx.app.log("GAME", "Green ball sold! Current balance: " + money);
 
-                float startX = viewport.getWorldWidth() / 2f + 80f;
-                float startY = viewport.getWorldHeight() - PADDING - 100f;
-                greenBall.setPosition(startX, startY);
-                greenBall.setVx(0f);
-                greenBall.setVy(0f);
+                    float startX = viewport.getWorldWidth() / 2f + 80f;
+                    float startY = viewport.getWorldHeight() - PADDING - 100f;
+
+                    // Мгновенный перенос и сброс скоростей до следующего тика цикла while
+                    greenBall.setPosition(startX, startY);
+                    greenBall.setVx(0f);
+                    greenBall.setVy(0f);
+                }
             }
 
             physicsAccumulator -= TIME_STEP;
@@ -135,7 +136,7 @@ public class Main extends ApplicationAdapter {
                 float impulseScalar = -(1 + restitution) * velAlongNormal;
                 float redMass = redBall.getCurrentRadius();
                 float greenMass = greenBall.getCurrentRadius();
-                float totalMass = redMass + greenMass;
+                float totalMass = redMass + greenMass; // ИСПРАВЛЕН
                 float impulseX = (impulseScalar * nx) / totalMass;
                 float impulseY = (impulseScalar * ny) / totalMass;
 
