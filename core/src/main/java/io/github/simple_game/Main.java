@@ -63,7 +63,6 @@ public class Main extends ApplicationAdapter {
 
             // ИСПРАВЛЕНО: Предотвращаем бесконечное начисление очков за один пролет
             if (shopZone.checkCollision(greenBall)) {
-                // Проверяем, что шар действительно внизу, а не только что телепортировался вверх
                 if (greenBall.getCenterY() < viewport.getWorldHeight() / 3f) {
                     money += 10;
                     Gdx.app.log("GAME", "Green ball sold! Current balance: " + money);
@@ -71,10 +70,14 @@ public class Main extends ApplicationAdapter {
                     float startX = viewport.getWorldWidth() / 2f + 80f;
                     float startY = viewport.getWorldHeight() - PADDING - 100f;
 
-                    // Мгновенный перенос и сброс скоростей до следующего тика цикла while
                     greenBall.setPosition(startX, startY);
                     greenBall.setVx(0f);
                     greenBall.setVy(0f);
+
+                    // ИСПРАВЛЕНО: Принудительно заставляем шар думать, что его отпустили.
+                    // Теперь он будет честно падать сверху вниз под действием гравитации,
+                    // даже если вы продолжаете держать палец на магазине!
+                    greenBall.resetDrag();
                 }
             }
 
@@ -136,7 +139,7 @@ public class Main extends ApplicationAdapter {
                 float impulseScalar = -(1 + restitution) * velAlongNormal;
                 float redMass = redBall.getCurrentRadius();
                 float greenMass = greenBall.getCurrentRadius();
-                float totalMass = redMass + greenMass; // ИСПРАВЛЕН
+                float totalMass = redMass + greenMass;
                 float impulseX = (impulseScalar * nx) / totalMass;
                 float impulseY = (impulseScalar * ny) / totalMass;
 

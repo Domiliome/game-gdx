@@ -113,6 +113,10 @@ public class GreenBall {
         shapeRenderer.circle(centerX, centerY, currentRadius);
         shapeRenderer.end();
     }
+        // Принудительный сброс захвата шара пальцем
+    public void resetDrag() {
+        this.isDragging = false;
+    }
 
     // === МЕТОДЫ ДЛЯ ВЗАИМОДЕЙСТВИЯ (ГЕТТЕРЫ И СЕТТЕРЫ) ===
     public float getCenterX() { return centerX; }
