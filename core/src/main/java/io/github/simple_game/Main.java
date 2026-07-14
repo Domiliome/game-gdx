@@ -73,10 +73,6 @@ public class Main extends ApplicationAdapter {
                     greenBall.setPosition(startX, startY);
                     greenBall.setVx(0f);
                     greenBall.setVy(0f);
-
-                    // ИСПРАВЛЕНО: Принудительно заставляем шар думать, что его отпустили.
-                    // Теперь он будет честно падать сверху вниз под действием гравитации,
-                    // даже если вы продолжаете держать палец на магазине!
                     greenBall.resetDrag();
                 }
             }
