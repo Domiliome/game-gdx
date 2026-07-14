@@ -61,7 +61,6 @@ public class Main extends ApplicationAdapter {
             greenBall.update(TIME_STEP);
             checkBallCollision();
 
-            // ИСПРАВЛЕНО: Предотвращаем бесконечное начисление очков за один пролет
             if (shopZone.checkCollision(greenBall)) {
                 if (greenBall.getCenterY() < viewport.getWorldHeight() / 3f) {
                     money += 10;
