@@ -1,6 +1,8 @@
 package io.github.simple_game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -15,12 +17,16 @@ public class RedBall {
     private final float FRICTION = 0.97f;
     private final float BOUNCE = 0.7f;
 
-    private final float GRAVITY = -800f;
+    private final float GRAVITY = -1200f;
 
+    // Жестко фиксированный базовый радиус (размер больше не меняется от HP)
     private final float BASE_RADIUS = 32f;
     private float currentRadius;
     private float targetRadius;
     private final float ANIMATION_SPEED = 10f;
+
+    private float hp = 200f;
+    private float maxHp = 200f;
 
     private final Rectangle bounds;
     private boolean isDragging;
@@ -31,11 +37,15 @@ public class RedBall {
     private final Viewport viewport;
     private final float padding;
 
+    private final Texture texture;
+
     public RedBall(float startX, float startY, Viewport viewport, float padding) {
         this.centerX = startX;
         this.centerY = startY;
         this.viewport = viewport;
         this.padding = padding;
+
+        this.texture = new Texture("red_ball.png");
 
         this.currentRadius = BASE_RADIUS;
         this.targetRadius = BASE_RADIUS;
@@ -46,16 +56,15 @@ public class RedBall {
 
     public void update(float step) {
         float deltaTime = Gdx.graphics.getDeltaTime();
-        currentRadius = MathUtils.lerp(currentRadius, targetRadius, ANIMATION_SPEED * deltaTime);
 
         if (Gdx.input.isTouched()) {
             touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             viewport.unproject(touchPoint);
 
             if (!isDragging) {
-                bounds.set(centerX - currentRadius, centerY - currentRadius, currentRadius * 2f, currentRadius * 2f);
+                // Прямоугольник нажатия теперь всегда стабилен и рассчитывается по базовому радиусу
+                bounds.set(centerX - BASE_RADIUS, centerY - BASE_RADIUS, BASE_RADIUS * 2f, BASE_RADIUS * 2f);
 
-                // ИЗМЕНЕНО: Схватить шар можно только в пределах нижней 40% части экрана
                 if (bounds.contains(touchPoint.x, touchPoint.y) && touchPoint.y < (viewport.getWorldHeight() * 0.4f)) {
                     isDragging = true;
                     offsetX = touchPoint.x - centerX;
@@ -76,33 +85,26 @@ public class RedBall {
             float oldCenterX = centerX;
             float oldCenterY = centerY;
 
-            // Вычисляем желаемые координаты, куда пользователь тянет шар
             float desiredX = touchPoint.x - offsetX;
             float desiredY = touchPoint.y - offsetY;
 
-            // Жесткое ограничение по оси X (не даем выйти за левый/правый края)
             centerX = MathUtils.clamp(desiredX, padding + currentRadius, viewport.getWorldWidth() - padding - currentRadius);
 
-            // ИЗМЕНЕНО: Мягкий порог ограничения по оси Y теперь смещен на 40% экрана
             float maxAllowedY = (viewport.getWorldHeight() * 0.4f) - padding - currentRadius;
             float minY = padding + currentRadius;
 
             if (desiredY <= maxAllowedY) {
-                // Если палец в пределах нижней зоны — шар следует за ним идеально
                 centerY = MathUtils.clamp(desiredY, minY, maxAllowedY);
             } else {
-                // Если палец ушел выше линии 40%, включаем "резиновое натяжение" (lerp)
                 float rubberY = MathUtils.lerp(maxAllowedY, desiredY, 0.15f);
-
-                // Не даем резинке растянуться выше, чем на +50 пикселей от линии
                 centerY = MathUtils.clamp(rubberY, maxAllowedY, maxAllowedY + 50f);
             }
 
-            // Рассчитываем скорость взмаха
-            vx = (centerX - oldCenterX) / step;
-            vy = (centerY - oldCenterY) / step;
+            vx = (centerX - oldCenterX) * 45f;
+            vy = (centerY - oldCenterY) * 45f;
 
         } else {
+            // ИСПРАВЛЕНО: Целевой радиус в свободном полете теперь всегда равен константе BASE_RADIUS
             targetRadius = BASE_RADIUS;
 
             vy += GRAVITY * step;
@@ -112,6 +114,8 @@ public class RedBall {
             vx *= Math.pow(FRICTION, step * 60);
             vy *= Math.pow(FRICTION, step * 60);
 
+            if (Math.abs(vx) < 5f) vx = 0f;
+
             float minX = padding + currentRadius;
             float maxX = viewport.getWorldWidth() - padding - currentRadius;
             if (centerX < minX) { centerX = minX; vx = -vx * BOUNCE; }
@@ -119,17 +123,17 @@ public class RedBall {
 
             float minY = padding + currentRadius;
             float maxY = viewport.getWorldHeight() - padding - currentRadius;
-            if (ballCenterYCheck(minY, maxY)) {
-
-            }
+            ballCenterYCheck(minY, maxY);
         }
+
+        currentRadius = MathUtils.lerp(currentRadius, targetRadius, ANIMATION_SPEED * deltaTime);
     }
 
     private boolean ballCenterYCheck(float minY, float maxY) {
         if (centerY < minY) {
             centerY = minY;
             vy = -vy * BOUNCE;
-            if (Math.abs(vy) < 20f) vy = 0f;
+            if (Math.abs(vy) < 40f) vy = 0f;
             return true;
         }
         else if (centerY > maxY) {
@@ -140,13 +144,64 @@ public class RedBall {
         return false;
     }
 
-    public void draw(ShapeRenderer shapeRenderer) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.9f, 0.3f, 0.3f, 1f);
-        shapeRenderer.circle(centerX, centerY, currentRadius);
-        shapeRenderer.end();
+    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        // Отрисовка спрайта рассчитывается строго по текущему интерполированному значению
+        float diameter = currentRadius * 2f;
+        float drawX = centerX - currentRadius;
+        float drawY = centerY - currentRadius;
+
+        batch.draw(texture, drawX, drawY, diameter, diameter);
+
+        // Интерфейс шкалы здоровья (отрисовка привязана к верхнему краю стабильного шара)
+        if (hp < maxHp && hp > 0f) {
+            batch.end();
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+            float barWidth = BASE_RADIUS * 2.5f;
+            float barHeight = 5f;
+            float barX = centerX - (barWidth / 2f);
+            float barY = centerY + currentRadius + 10f;
+
+            float hpPercent = hp / maxHp;
+
+            shapeRenderer.setColor(0.5f, 0.1f, 0.1f, 1f);
+            shapeRenderer.rect(barX, barY, barWidth, barHeight);
+
+            shapeRenderer.setColor(0.2f, 0.6f, 0.9f, 1f);
+            shapeRenderer.rect(barX, barY, barWidth * hpPercent, barHeight);
+
+            shapeRenderer.end();
+
+            batch.begin();
+        }
     }
 
+    public void dispose() {
+        if (texture != null) {
+            texture.dispose();
+        }
+    }
+
+    public void setMaxHp(float maxHp) {
+        this.maxHp = maxHp;
+    }
+
+    public void takeDamage(float damage) {
+        this.hp -= damage;
+        if (this.hp < 0f) this.hp = 0f;
+    }
+
+    public void heal(float amount) {
+        this.hp += amount;
+        if (this.hp > maxHp) this.hp = maxHp;
+    }
+
+    public boolean isDead() {
+        return this.hp <= 0f;
+    }
+
+    // === ГЕТТЕРЫ И СЕТТЕРЫ ===
     public float getCenterX() { return centerX; }
     public float getCenterY() { return centerY; }
     public float getCurrentRadius() { return currentRadius; }

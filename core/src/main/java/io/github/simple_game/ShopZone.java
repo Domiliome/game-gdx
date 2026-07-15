@@ -1,48 +1,53 @@
 package io.github.simple_game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 
 public class ShopZone {
-    // Координаты и размеры прямоугольника зоны продажи
     private final float x;
     private final float y;
     private final float width;
     private final float height;
-
-    // Цвет зоны (полупрозрачный зеленый)
     private final Color zoneColor;
 
-    // Конструктор: инициализирует зону в левом нижнем углу с учетом отступа
     public ShopZone(float padding, float size) {
         this.x = padding;
         this.y = padding;
         this.width = size;
         this.height = size;
-        this.zoneColor = new Color(0.3f, 0.6f, 0.3f, 0.4f); // Полупрозрачный зеленый
+        this.zoneColor = new Color(0.3f, 0.6f, 0.3f, 0.4f);
     }
 
-    // Проверяет, зашел ли салатовый шар в эту зону
     public boolean checkCollision(GreenBall greenBall) {
-        // Вычисляем границы зоны продажи
-        float shopMaxX = x + width;
-        float shopMaxY = y + height;
+        float ballX = greenBall.getCenterX();
+        float ballY = greenBall.getCenterY();
+        float radius = greenBall.getCurrentRadius();
 
-        // Проверяем, пересекает ли край салатового шара границы зоны
-        if (greenBall.getCenterX() - greenBall.getCurrentRadius() < shopMaxX &&
-            greenBall.getCenterY() - greenBall.getCurrentRadius() < shopMaxY) {
+        float closestX = MathUtils.clamp(ballX, x, x + width);
+        float closestY = MathUtils.clamp(ballY, y, y + height);
 
-            // Если столкновение произошло, возвращаем true
-            return true;
-        }
-        return false;
+        float distanceX = ballX - closestX;
+        float distanceY = ballY - closestY;
+
+        float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+        return distanceSquared < (radius * radius);
     }
 
-    // Отрисовка зоны продажи с помощью ShapeRenderer
+    // ИСПРАВЛЕНО: Безопасное включение прозрачности через встроенные функции LibGDX
     public void draw(ShapeRenderer shapeRenderer) {
+        // Заставляем ShapeRenderer использовать правильное смешивание цветов
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Включаем встроенный блендинг для поддержки альфа-канала (0.4f)
+        Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_BLEND);
+
         shapeRenderer.setColor(zoneColor);
         shapeRenderer.rect(x, y, width, height);
         shapeRenderer.end();
+
+        // Обязательно выключаем, чтобы не ломать отрисовку линий и интерфейса
+        Gdx.gl.glDisable(com.badlogic.gdx.graphics.GL20.GL_BLEND);
     }
 }
