@@ -1,11 +1,11 @@
 package io.github.simple_game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 public class PhysicsSystem {
 
-    // ИСПРАВЛЕНО: Теперь принимает GameManager для учета уровня прокачки урона
     public static void checkBallCollisions(GameManager gameManager, RedBall redBall, Array<GreenBall> greenBalls) {
         boolean isTouched = Gdx.input.isTouched();
 
@@ -33,7 +33,6 @@ public class PhysicsSystem {
                 float rvy = gb.getVy() - redBall.getVy();
                 float velAlongNormal = rvx * nx + rvy * ny;
 
-                // Если шары движутся навстречу друг другу
                 if (velAlongNormal < 0) {
                     float restitution = 0.8f;
                     float impulseScalar = -(1 + restitution) * velAlongNormal;
@@ -45,25 +44,28 @@ public class PhysicsSystem {
                     float impulseX = (impulseScalar * nx) / totalMass;
                     float impulseY = (impulseScalar * ny) / totalMass;
 
-                    // Расчет урона на основе силы столкновения
                     float strikeForce = Math.abs(velAlongNormal);
 
-                    // Урон наносится, только если удар был ощутимым (скорость больше 80 пикселей в секунду)
                     if (strikeForce > 80f) {
-                        // Базовый расчет урона по врагу
                         float baseEnemyDamage = strikeForce * 0.04f;
 
-                        // ИСПРАВЛЕНО: Множитель урона увеличивается на +25% за каждый уровень апгрейда из магазина
                         float damageMultiplier = 1f + (gameManager.getDamageLevel() - 1) * 0.25f;
                         float finalEnemyDamage = baseEnemyDamage * damageMultiplier;
 
+                        // ДОБАВЛЕНО: Расчет критического удара со случайным шансом 15%
+                        boolean isCrit = MathUtils.random() < 0.15f;
+                        if (isCrit) {
+                            finalEnemyDamage *= 2.0f; // Критический удар наносит х2 урон
+                            Gdx.app.log("COMBAT", "💥 CRITICAL HIT! Enemy takes: " + finalEnemyDamage + " (x" + damageMultiplier + ")");
+                        } else {
+                            Gdx.app.log("COMBAT", "Collision! Enemy takes: " + finalEnemyDamage + " (x" + damageMultiplier + ")");
+                        }
+
                         gb.takeDamage(finalEnemyDamage);
 
-                        // Красный шар получает ответный урон в момент соударения
+                        // Ответный урон игроку остается фиксированным и не зависит от крита
                         float playerDamage = strikeForce * 0.02f;
                         redBall.takeDamage(playerDamage);
-
-                        Gdx.app.log("COMBAT", "Collision! Enemy takes: " + finalEnemyDamage + " (x" + damageMultiplier + ") | Player takes: " + playerDamage);
                     }
 
                     if (!isTouched) {
