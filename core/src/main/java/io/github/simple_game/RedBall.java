@@ -55,8 +55,8 @@ public class RedBall {
             if (!isDragging) {
                 bounds.set(centerX - currentRadius, centerY - currentRadius, currentRadius * 2f, currentRadius * 2f);
 
-                // Схватить шар можно только в нижней трети экрана
-                if (bounds.contains(touchPoint.x, touchPoint.y) && touchPoint.y < (viewport.getWorldHeight() / 3f)) {
+                // ИЗМЕНЕНО: Схватить шар можно только в пределах нижней 40% части экрана
+                if (bounds.contains(touchPoint.x, touchPoint.y) && touchPoint.y < (viewport.getWorldHeight() * 0.4f)) {
                     isDragging = true;
                     offsetX = touchPoint.x - centerX;
                     offsetY = touchPoint.y - centerY;
@@ -83,24 +83,22 @@ public class RedBall {
             // Жесткое ограничение по оси X (не даем выйти за левый/правый края)
             centerX = MathUtils.clamp(desiredX, padding + currentRadius, viewport.getWorldWidth() - padding - currentRadius);
 
-            // МЯГКОЕ ОГРАНИЧЕНИЕ ПО ОСИ Y (Эффект резины)
-            float maxAllowedY = (viewport.getWorldHeight() / 3f) - padding - currentRadius;
+            // ИЗМЕНЕНО: Мягкий порог ограничения по оси Y теперь смещен на 40% экрана
+            float maxAllowedY = (viewport.getWorldHeight() * 0.4f) - padding - currentRadius;
             float minY = padding + currentRadius;
 
             if (desiredY <= maxAllowedY) {
-                // Если палец в пределах нижней трети — шар следует за ним идеально
+                // Если палец в пределах нижней зоны — шар следует за ним идеально
                 centerY = MathUtils.clamp(desiredY, minY, maxAllowedY);
             } else {
-                // Если палец ушел выше линии 1/3, включаем "резиновое натяжение" (lerp)
-                // Шар плавно замедляется и упирается, но ПРОДОЛЖАЕТ немного сдвигаться вверх за пальцем,
-                // что позволяет рассчитать скорость броска (vy)!
-                float rubberY = MathUtils.lerp(maxAllowedY, desiredY, 0.15f); // 0.15f - коэффициент растяжения резины
+                // Если палец ушел выше линии 40%, включаем "резиновое натяжение" (lerp)
+                float rubberY = MathUtils.lerp(maxAllowedY, desiredY, 0.15f);
 
                 // Не даем резинке растянуться выше, чем на +50 пикселей от линии
                 centerY = MathUtils.clamp(rubberY, maxAllowedY, maxAllowedY + 50f);
             }
 
-            // Рассчитываем скорость взмаха. Теперь vy не будет равна 0 при броске через линию!
+            // Рассчитываем скорость взмаха
             vx = (centerX - oldCenterX) / step;
             vy = (centerY - oldCenterY) / step;
 
