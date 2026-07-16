@@ -1,18 +1,16 @@
 package io.github.simple_game.android;
 
 import android.os.Bundle;
-
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import io.github.simple_game.Main;
+import io.github.simple_game.core.Main; // ДОЛЖНО БЫТЬ ТАК
 
-/** Launches the Android application. */
 public class AndroidLauncher extends AndroidApplication {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidApplicationConfiguration configuration = new AndroidApplicationConfiguration();
-        configuration.useImmersiveMode = true; // Recommended, but not required.
-        initialize(new Main(), configuration);
+        configuration.useImmersiveMode = true;
+        initialize(new Main(), configuration); // ДОЛЖНО БЫТЬ ТАК
     }
 }
