@@ -71,4 +71,6 @@ public class GameLoop {
     public Array<Tower> getTowers() { return towers; }
     public Array<Projectile> getProjectiles() { return projectiles; }
     public RoadPath getRoadPath() { return roadPath; }
+    public WaveManager getWaveManager() { return waveManager; }
+
 }
