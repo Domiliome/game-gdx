@@ -11,12 +11,24 @@ import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 
+/**
+ * Класс подсистемы отрисовки графики игрового мира.
+ * Отвечает за визуализацию всех сущностей на карте (башен, врагов, снарядов),
+ * дороги уровня, дебаг-информации и полосок здоровья.
+ */
 public class GameRenderer {
     private final GameLoop gameLoop;
     private final OrthographicCamera camera;
     private final SpriteBatch batch;
     private final ShapeRenderer shapeRenderer;
 
+    /**
+     * Создает новый рендерер игрового мира.
+     * Инициализирует графические инструменты для вывода текстур и примитивных фигур.
+     *
+     * @param gameLoop актуальная ссылка на игровой цикл для получения списков объектов
+     * @param camera   ортографическая камера экрана для синхронизации проекции
+     */
     public GameRenderer(GameLoop gameLoop, OrthographicCamera camera) {
         this.gameLoop = gameLoop;
         this.camera = camera;
@@ -24,6 +36,11 @@ public class GameRenderer {
         this.shapeRenderer = new ShapeRenderer();
     }
 
+    /**
+     * Главный метод рендеринга кадра, вызываемый из игрового экрана.
+     * Синхронизирует матрицы инструментов отрисовки с камерой и последовательно
+     * выполняет отрисовку геометрических фигур и графических спрайтов.
+     */
     public void render() {
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -32,6 +49,10 @@ public class GameRenderer {
         renderSprites();
     }
 
+    /**
+     * Визуализирует геометрические элементы игрового мира через {@link ShapeRenderer}.
+     * Сюда входит отрисовка линий маршрута, кругов радиуса атаки башен и полосок здоровья врагов.
+     */
     private void renderShapes() {
         RoadPath path = (RoadPath) gameLoop.getRoadPath();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -66,6 +87,10 @@ public class GameRenderer {
         shapeRenderer.end();
     }
 
+    /**
+     * Визуализирует растровые спрайты и текстуры игровых объектов через {@link SpriteBatch}.
+     * На этапе прототипирования временно использует цветные круги в качестве заглушек сущностей.
+     */
     private void renderSprites() {
         batch.begin();
         batch.end();
@@ -83,6 +108,10 @@ public class GameRenderer {
         shapeRenderer.end();
     }
 
+    /**
+     * Освобождает системные ресурсы, занятые подсистемой рендеринга.
+     * Принудительно очищает контексты {@link SpriteBatch} и {@link ShapeRenderer} из видеопамяти.
+     */
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();

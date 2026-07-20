@@ -7,6 +7,11 @@ import io.github.simple_game.core.model.entity.Projectile;
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.movement.RoadPath;
 
+/**
+ * Ядро игрового процесса (Центральный игровой цикл).
+ * Отвечает за хранение списков всех сущностей на карте, координацию их
+ * логического обновления каждый кадр и передачу контекста данных между менеджерами.
+ */
 public class GameLoop {
     private final Array<Enemy> enemies;
     private final Array<Tower> towers;
@@ -16,6 +21,10 @@ public class GameLoop {
     private RoadPath roadPath;
     private final WaveManager waveManager;
 
+    /**
+     * Создает новый игровой цикл. Инициализирует списки сущностей,
+     * строит дефолтный маршрут движения для уровня и запускает менеджер волн.
+     */
     public GameLoop() {
         this.enemies = new Array<>();
         this.towers = new Array<>();
@@ -26,6 +35,10 @@ public class GameLoop {
         this.waveManager = new WaveManager(roadPath);
     }
 
+    /**
+     * Внутренний метод для формирования статических точек пути (вейпоинтов),
+     * по которым наземные враги будут перемещаться от точки спавна до базы игрока.
+     */
     private void initLevelPath() {
         roadPath = new RoadPath();
         roadPath.addPoint(0, 400);
@@ -34,6 +47,13 @@ public class GameLoop {
         roadPath.addPoint(800, 150);
     }
 
+    /**
+     * Главный метод такта игры. Непрерывно вызывается из игрового экрана.
+     * Последовательно запускает логику спавна волн, передвижения врагов, ИИ башен и полета снарядов.
+     * Использует обратные циклы для безопасного удаления уничтоженных сущностей во время итерации.
+     *
+     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     */
     public void update(float deltaTime) {
         waveManager.update(deltaTime, enemies);
 
@@ -63,14 +83,37 @@ public class GameLoop {
         }
     }
 
+    /**
+     * Регистрирует новую построенную башню в списках игрового мира.
+     *
+     * @param tower созданный экземпляр оборонительной башни
+     */
     public void addTower(Tower tower) {
         towers.add(tower);
     }
 
+    /**
+     * @return динамический список всех живых врагов, находящихся на карте
+     */
     public Array<Enemy> getEnemies() { return enemies; }
-    public Array<Tower> getTowers() { return towers; }
-    public Array<Projectile> getProjectiles() { return projectiles; }
-    public RoadPath getRoadPath() { return roadPath; }
-    public WaveManager getWaveManager() { return waveManager; }
 
+    /**
+     * @return список всех возведенных игроком башен
+     */
+    public Array<Tower> getTowers() { return towers; }
+
+    /**
+     * @return список летящих к целям снарядов
+     */
+    public Array<Projectile> getProjectiles() { return projectiles; }
+
+    /**
+     * @return текущий настроенный маршрут движения для врагов
+     */
+    public RoadPath getRoadPath() { return roadPath; }
+
+    /**
+     * @return ссылку на активный менеджер волн наступающих мобов
+     */
+    public WaveManager getWaveManager() { return waveManager; }
 }
