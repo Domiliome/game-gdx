@@ -2,70 +2,90 @@ package io.github.simple_game.core.model.entity;
 
 import com.badlogic.gdx.math.Vector2;
 
+/**
+ * Класс, представляющий самонаводящийся снаряд в игровом мире.
+ * Снаряд выпускается оборонительной башней, каждый кадр рассчитывает
+ * направление к своей цели и преследует её до момента столкновения или деактивации.
+ */
 public class Projectile extends Entity {
     private final Enemy target;
     private final float damage;
     private final float speed;
     private boolean active = true;
 
+    /**
+     * Создает новый снаряд в заданных координатах, направленный на конкретного врага.
+     *
+     * @param x          начальная координата X появления снаряда (центр башни)
+     * @param y          начальная координата Y появления снаряда (центр башни)
+     * @param target     вражеский юнит, выступающий целью для атаки
+     * @param damage     количество урона, которое будет нанесено цели при попадании
+     * @param towerType  тип башни, выпустившей снаряд (определяет скорость полета)
+     */
     public Projectile(float x, float y, Enemy target, float damage, TowerType towerType) {
         super(x, y);
         this.target = target;
         this.damage = damage;
-
-        // Скорость снаряда зависит от типа башни
         this.speed = determineSpeed(towerType);
     }
 
+    /**
+     * Расчитывает скорость полета снаряда на основе типа башни, которая его выпустила.
+     *
+     * @param towerType тип башни
+     * @return скорость перемещения снаряда в пикселях в секунду
+     */
     private float determineSpeed(TowerType towerType) {
-        switch (towerType) {
-            case ARCHER: return 400f; // Стрела летит быстро
-            case CANNON: return 250f; // Ядро летит медленнее
-            case MAGIC:  return 320f; // Магический заряд
-            default:     return 300f;
-        }
+        return switch (towerType) {
+            case ARCHER -> 400f;
+            case CANNON -> 250f;
+            case MAGIC  -> 320f;
+            default     -> 300f;
+        };
     }
 
+    /**
+     * Обновляет физику полета снаряда каждый кадр.
+     * Если цель пропадает или погибает раньше времени, снаряд деактивируется.
+     * В остальных случаях снаряд летит к координатам врага с учетом игрового времени.
+     *
+     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     */
     @Override
     public void update(float deltaTime) {
         if (!active) return;
 
-        // 1. Если цель погибла или ушла с карты до того, как снаряд долетел
         if (target == null || !target.isActive()) {
             active = false;
             return;
         }
 
-        // 2. Вычисляем вектор направления к цели: (Позиция_Цели - Позиция_Снаряда)
         Vector2 targetPos = target.getPosition();
         Vector2 direction = new Vector2(targetPos).sub(position);
-
-        // Расстояние до цели
         float distance = direction.len();
-
-        // Дистанция, которую снаряд пролетит за этот кадр
         float step = speed * deltaTime;
 
-        // 3. Проверяем столкновение (попадание)
-        // Если шаг больше или равен расстоянию, значит в этом кадре мы долетели
         if (step >= distance) {
-            position.set(targetPos); // Перемещаем точно в цель
+            position.set(targetPos);
             hitTarget();
         } else {
-            // Нормализуем вектор (длина = 1) и продвигаем снаряд вперед
             direction.nor().scl(step);
             position.add(direction);
         }
     }
 
     /**
-     * Логика при попадании снаряда во врага
+     * Внутренний метод обработки успешного столкновения снаряда с целью.
+     * Наносит урон врагу и переводит снаряд в неактивное состояние для удаления из игры.
      */
     private void hitTarget() {
-        active = false; // Удаляем снаряд из игры
-        target.takeDamage(damage); // Наносим урон врагу
+        active = false;
+        target.takeDamage(damage);
     }
 
+    /**
+     * @return true, если снаряд все еще летит к цели; false, если он уже попал или пропал
+     */
     public boolean isActive() {
         return active;
     }
