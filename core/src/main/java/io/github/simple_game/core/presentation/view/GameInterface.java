@@ -52,10 +52,10 @@ public class GameInterface {
         String statusText;
 
         if (waveManager.isWaveActive()) {
-            statusText = "Статус: Идет бой!";
+            statusText = "Status: Battle in progress!";
             font.setColor(Color.RED);
         } else {
-            statusText = String.format("До следующей волны: %.1f сек", waveManager.getTimeUntilNextWave());
+            statusText = String.format("Next wave: %.1f sec", waveManager.getTimeUntilNextWave());
             font.setColor(Color.GOLD);
         }
 

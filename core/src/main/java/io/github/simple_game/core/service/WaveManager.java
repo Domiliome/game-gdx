@@ -50,7 +50,7 @@ public class WaveManager {
             if (enemiesLeftToSpawn == 0 && enemies.size == 0) {
                 isWaveActive = false;
                 waveTimer = 0f;
-                System.out.println("Волна " + currentWaveNumber + " зачищена!");
+                System.out.println("Wave " + currentWaveNumber + " cleared!");
             }
         } else {
             waveTimer += deltaTime;
@@ -72,7 +72,7 @@ public class WaveManager {
         enemiesLeftToSpawn = 3 + currentWaveNumber * 2;
         spawnTimer = 0f;
 
-        System.out.println("Началась волна №" + currentWaveNumber + "! Врагов: " + enemiesLeftToSpawn);
+        System.out.println("Start wave " + currentWaveNumber + "! Enemy: " + enemiesLeftToSpawn);
     }
 
     /**

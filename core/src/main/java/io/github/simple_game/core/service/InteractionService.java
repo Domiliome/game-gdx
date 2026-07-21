@@ -3,6 +3,7 @@ package io.github.simple_game.core.service;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
+
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.entity.TowerType;
 
@@ -19,7 +20,7 @@ public class InteractionService extends InputAdapter {
     private TowerType selectedTowerType = TowerType.ARCHER;
     private final Vector3 touchPoint = new Vector3();
 
-    private static final int CELL_SIZE = 64;
+    private static final int CELL_SIZE = 32;
 
     /**
      * Создает новый сервис взаимодействия.

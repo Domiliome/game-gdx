@@ -41,10 +41,12 @@ public class GameLoop {
      */
     private void initLevelPath() {
         roadPath = new RoadPath();
-        roadPath.addPoint(0, 400);
-        roadPath.addPoint(300, 400);
-        roadPath.addPoint(300, 150);
-        roadPath.addPoint(800, 150);
+        roadPath.addPoint(240, 800);   // Старт: Верх-центр экрана (вне видимости)
+        roadPath.addPoint(240, 500);   // Идут вниз до центра
+        roadPath.addPoint(64, 500);    // Поворот налево
+        roadPath.addPoint(64, 200);    // Поворот вниз вдоль левого края
+        roadPath.addPoint(416, 200);   // Поворот направо
+        roadPath.addPoint(416, 0);     // Финиш: База игрока в самом низу экрана
     }
 
     /**

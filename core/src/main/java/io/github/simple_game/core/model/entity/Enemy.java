@@ -50,7 +50,7 @@ public class Enemy extends Entity {
      */
     public void onReachedEnd() {
         this.active = false;
-        System.out.println("Враг добрался до базы!");
+        System.out.println("Event: Enemy reached the base!");
     }
 
     /**
