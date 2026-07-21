@@ -48,7 +48,7 @@ public class GameInterface {
 
         WaveManager waveManager = gameLoop.getWaveManager();
 
-        String waveText = "Волна: " + waveManager.getCurrentWaveNumber();
+        String waveText = "Wave: " + waveManager.getCurrentWaveNumber();
         String statusText;
 
         if (waveManager.isWaveActive()) {

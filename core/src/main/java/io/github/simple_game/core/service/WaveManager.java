@@ -92,13 +92,17 @@ public class WaveManager {
             float health = 80f + (currentWaveNumber * 20f);
             float speed = 70f + Math.min(50f, currentWaveNumber * 5f);
 
-            Enemy enemy = new Enemy(0, 400, health, speed, new WalkMovement(roadPath));
+            // Получаем самую первую точку маршрута (точку старта)
+            com.badlogic.gdx.math.Vector2 startPoint = roadPath.getPoint(0);
+            // Создаем врага ровно в точке старта
+            Enemy enemy = new Enemy(startPoint.x, startPoint.y, health, speed, new WalkMovement(roadPath));
             enemies.add(enemy);
 
             enemiesLeftToSpawn--;
             spawnTimer = 0f;
         }
     }
+
 
     /**
      * @return порядковый номер текущей или последней пройденной волны
