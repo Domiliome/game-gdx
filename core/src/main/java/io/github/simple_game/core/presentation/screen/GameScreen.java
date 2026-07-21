@@ -31,7 +31,8 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void show() {
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, 480, 800);
+
 
         gameLoop = new GameLoop();
         gameRenderer = new GameRenderer(gameLoop, camera);
