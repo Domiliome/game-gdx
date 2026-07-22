@@ -69,7 +69,7 @@ public class WaveManager {
         currentWaveNumber++;
         isWaveActive = true;
 
-        enemiesLeftToSpawn = 3 + currentWaveNumber * 2;
+        enemiesLeftToSpawn = 4 + currentWaveNumber * 2;
         spawnTimer = 0f;
 
         System.out.println("Start wave " + currentWaveNumber + "! Enemy: " + enemiesLeftToSpawn);
