@@ -112,6 +112,7 @@ public class GameRenderer {
         }
 
 
+
         // Полоски здоровья над врагами
         for (Enemy enemy : gameLoop.getEnemies()) {
             float enemyX = enemy.getPosition().x;
