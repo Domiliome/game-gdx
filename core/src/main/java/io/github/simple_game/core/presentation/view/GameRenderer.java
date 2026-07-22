@@ -111,6 +111,7 @@ public class GameRenderer {
             shapeRenderer.circle(projectile.getPosition().x, projectile.getPosition().y, 3);
         }
 
+
         // Полоски здоровья над врагами
         for (Enemy enemy : gameLoop.getEnemies()) {
             float enemyX = enemy.getPosition().x;

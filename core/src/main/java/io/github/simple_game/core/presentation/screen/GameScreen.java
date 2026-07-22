@@ -10,6 +10,7 @@ import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
 
+
 /**
  * Класс игрового экрана, управляющий жизненным циклом и рендерингом основного игрового процесса.
  * Связывает воедино центральную логику обновления мира ({@link GameLoop}),
