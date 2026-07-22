@@ -61,6 +61,7 @@ public class GameRenderer {
         renderShapes();
     }
 
+
     /**
      * Отрисовка графических спрайтов и фонов.
      */
