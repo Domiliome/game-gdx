@@ -50,14 +50,22 @@ public class GameScreen extends ScreenAdapter {
      *
      * @param delta время, прошедшее с момента отрисовки предыдущего кадра в секундах
      */
-    @Override
+ @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // 1. Обновляем игровой цикл
         gameLoop.update(delta);
+
+        // 2. Обновляем плавное скольжение камеры после свайпа пальцем
+        if (interactionService != null) {
+            interactionService.updateInertia(delta);
+        }
+
         camera.update();
 
+        // 3. Отрисовка
         gameRenderer.render();
         gameInterface.render();
     }

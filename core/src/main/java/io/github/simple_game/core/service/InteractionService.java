@@ -11,7 +11,7 @@ import io.github.simple_game.core.model.entity.TowerType;
 /**
  * Сервис обработки пользовательского ввода и сложных жестов взаимодействия с игровым миром.
  * Реализует {@link GestureDetector.GestureListener} для поддержки мультитач-жестов,
- * таких как Pinch-to-Zoom (приближение/отдаление) и Pan (перетаскивание карты одним пальцем).
+ * таких как Pinch-to-Zoom (масштабирование), Pan (перетаскивание) и Fling (кинематическая инерция).
  */
 public class InteractionService implements GestureDetector.GestureListener {
     private final GameLoop gameLoop;
@@ -25,12 +25,19 @@ public class InteractionService implements GestureDetector.GestureListener {
     private float initialZoom = 1.0f;
     private final float minZoom = 0.5f;
     private final float maxZoom = 2.0f;
+        // Коэффициент чувствительности перемещения (1.0f — без изменений, 0.5f — в два раза медленнее)
+    private static final float PAN_SENSITIVITY = 0.3f;
+
+
+    // Вектор текущей скорости инерционного движения и коэффициент затухания (трения)
+    private final Vector2 velocity = new Vector2();
+    private final float friction = 0.90f;
 
     /**
      * Создает новый сервис взаимодействия и жестов.
      *
      * @param gameLoop актуальная ссылка на игровой цикл
-     * @param camera   ортографическая камера игрового мира
+     * @param camera   ортографическаяカメラ игрового мира
      */
     public InteractionService(GameLoop gameLoop, OrthographicCamera camera) {
         this.gameLoop = gameLoop;
@@ -58,19 +65,53 @@ public class InteractionService implements GestureDetector.GestureListener {
 
     /**
      * Срабатывает при перетаскивании карты одним пальцем по экрану.
-     * Сдвигает позицию камеры с учетом текущего масштаба и удерживает её в границах игрового поля.
+     * Сдвигает позицию камеры с учетом масштаба и коэффициента чувствительности,
+     * делая перемещение более медленным и контролируемым.
      */
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        camera.position.add(-deltaX * camera.zoom, deltaY * camera.zoom, 0);
+        velocity.set(0, 0);
+
+        // Умножаем смещение на PAN_SENSITIVITY, чтобы замедлить движение карты под пальцем
+        camera.position.add(-deltaX * camera.zoom * PAN_SENSITIVITY, deltaY * camera.zoom * PAN_SENSITIVITY, 0);
+
         clampCamera();
         return true;
     }
 
     /**
+     * Срабатывает, когда пользователь резко смахивает карту и отпускает экран.
+     * Задает начальный импульс скорости инерции, скорректированный под общую чувствительность.
+     */
+    @Override
+    public boolean fling(float vx, float vy, int button) {
+        // Замедляем инерционный бросок соразмерно ручному перетаскиванию
+        velocity.set(-vx * camera.zoom * PAN_SENSITIVITY, vy * camera.zoom * PAN_SENSITIVITY);
+        return true;
+    }
+
+
+    /**
+     * Метод обновления физики инерционного затухания.
+     * Должен вызываться каждый кадр из внешнего графического рендерера или игрового экрана.
+     * Плавно снижает скорость скольжения за счет коэффициента трения.
+     *
+     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     */
+    public void updateInertia(float deltaTime) {
+        if (velocity.len() < 10f) {
+            velocity.set(0, 0);
+            return;
+        }
+
+        camera.position.add(velocity.x * deltaTime, velocity.y * deltaTime, 0);
+        velocity.scl((float) Math.pow(friction, deltaTime * 60f));
+        clampCamera();
+    }
+
+    /**
      * Математическое ядро жеста Pinch-to-Zoom.
-     * Рассчитывает соотношение между начальным расстоянием пальцев и текущим,
-     * после чего пропорционально изменяет зум камеры с ограничением по лимитам.
+     * Рассчитывает соотношение между начальным расстоянием пальцев и текущим.
      */
     @Override
     public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
@@ -161,6 +202,5 @@ public class InteractionService implements GestureDetector.GestureListener {
 
     @Override public boolean touchDown(float x, float y, int pointer, int button) { return false; }
     @Override public boolean longPress(float x, float y) { return false; }
-    @Override public boolean fling(float vx, float vy, int button) { return false; }
     @Override public boolean panStop(float x, float y, int pointer, int button) { return false; }
 }
