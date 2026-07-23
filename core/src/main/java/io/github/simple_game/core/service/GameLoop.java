@@ -1,7 +1,6 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
-
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.Projectile;
 import io.github.simple_game.core.model.entity.Tower;
@@ -20,10 +19,12 @@ public class GameLoop {
 
     private RoadPath roadPath;
     private final WaveManager waveManager;
+    private final CurrencyManager currencyManager;
 
     /**
      * Создает новый игровой цикл. Инициализирует списки сущностей,
-     * строит дефолтный маршрут движения для уровня и запускает менеджер волн.
+     * строит дефолтный маршрут движения для уровня, запускает менеджер волн
+     * и подсистему игровой экономики.
      */
     public GameLoop() {
         this.enemies = new Array<>();
@@ -33,6 +34,7 @@ public class GameLoop {
 
         initLevelPath();
         this.waveManager = new WaveManager(roadPath);
+        this.currencyManager = new CurrencyManager(250, 20);
     }
 
     /**
@@ -41,17 +43,18 @@ public class GameLoop {
      */
     private void initLevelPath() {
         roadPath = new RoadPath();
-        roadPath.addPoint(240, 800);   // Старт: Верх-центр экрана (вне видимости)
-        roadPath.addPoint(240, 500);   // Идут вниз до центра
-        roadPath.addPoint(64, 500);    // Поворот налево
-        roadPath.addPoint(64, 200);    // Поворот вниз вдоль левого края
-        roadPath.addPoint(416, 200);   // Поворот направо
-        roadPath.addPoint(416, 0);     // Финиш: База игрока в самом низу экрана
+        roadPath.addPoint(240, 800);
+        roadPath.addPoint(240, 500);
+        roadPath.addPoint(64, 500);
+        roadPath.addPoint(64, 200);
+        roadPath.addPoint(416, 200);
+        roadPath.addPoint(416, 0);
     }
 
     /**
      * Главный метод такта игры. Непрерывно вызывается из игрового экрана.
      * Последовательно запускает логику спавна волн, передвижения врагов, ИИ башен и полета снарядов.
+     * Передает контекст экономики (CurrencyManager) сущностям для начисления наград или списания жизней.
      * Использует обратные циклы для безопасного удаления уничтоженных сущностей во время итерации.
      *
      * @param deltaTime время, прошедшее с предыдущего кадра в секундах
@@ -61,7 +64,7 @@ public class GameLoop {
 
         for (int i = enemies.size - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
-            enemy.update(deltaTime);
+            enemy.update(deltaTime, currencyManager);
 
             if (!enemy.isActive()) {
                 enemies.removeIndex(i);
@@ -77,7 +80,7 @@ public class GameLoop {
 
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
-            projectile.update(deltaTime);
+            projectile.update(deltaTime, currencyManager);
 
             if (!projectile.isActive()) {
                 projectiles.removeIndex(i);
@@ -118,4 +121,9 @@ public class GameLoop {
      * @return ссылку на активный менеджер волн наступающих мобов
      */
     public WaveManager getWaveManager() { return waveManager; }
+
+    /**
+     * @return ссылку на менеджер экономики и внутриигрового баланса игрока
+     */
+    public CurrencyManager getCurrencyManager() { return currencyManager; }
 }

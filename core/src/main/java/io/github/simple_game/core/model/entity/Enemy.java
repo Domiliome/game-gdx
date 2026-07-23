@@ -1,11 +1,12 @@
 package io.github.simple_game.core.model.entity;
 
 import io.github.simple_game.core.model.movement.MovementBehavior;
+import io.github.simple_game.core.service.CurrencyManager;
 
 /**
  * Класс, представляющий вражеского юнита в игровом мире.
  * Хранит состояние здоровья, скорость и делегирует логику своего
- * перемещения выбранной стратегии движения.
+ * перемещения выбранной стратегии движения с учетом игровой экономики.
  */
 public class Enemy extends Entity {
     private float health;
@@ -30,27 +31,43 @@ public class Enemy extends Entity {
     }
 
     /**
-     * Обновляет состояние врага каждый кадр.
+     * Перегруженный метод обновления состояния врага каждый кадр.
      * Если враг активен, метод продвигает его по карте с помощью установленной стратегии движения.
+     * Если после хода стратегия пометила врага неактивным из-за достижения финиша, списывает жизнь базы.
      *
      * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     * @param economy   ссылка на менеджер экономики для обработки штрафа при прорыве врага
      */
-    @Override
-    public void update(float deltaTime) {
+    public void update(float deltaTime, CurrencyManager economy) {
         if (!active) return;
 
         if (movementBehavior != null) {
             movementBehavior.move(this, deltaTime);
         }
+
+        if (!active && health > 0) {
+            economy.decreaseLives(1);
+        }
     }
 
     /**
-     * Вызывается, когда враг успешно добирается до конца маршрута.
-     * Деактивирует сущность и логирует событие проникновения на базу.
+     * Базовый метод обновления без параметров.
+     * Оставлен пустым в соответствии с контрактом базового класса {@link Entity},
+     * так как логика врага требует обязательной передачи контекста экономики.
+     *
+     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     */
+    @Override
+    public void update(float deltaTime) {
+        // Оставлен пустым, так как необходим вызов перегруженного метода update
+    }
+
+    /**
+     * Вызывается из стратегии перемещения, когда враг успешно добирается до конца маршрута.
+     * Помечает сущность как неактивную для последующего удаления из игрового цикла.
      */
     public void onReachedEnd() {
         this.active = false;
-        System.out.println("Event: Enemy reached the base!");
     }
 
     /**
@@ -70,14 +87,18 @@ public class Enemy extends Entity {
 
     /**
      * Наносит врагу урон. Если здоровье падает до нуля или ниже,
-     * враг помечается как неактивный.
+     * враг помечается как неактивный, а игроку начисляется награда.
      *
-     * @param damage количество наносимого урона
+     * @param damage  количество наносимого урона
+     * @param economy ссылка на менеджер экономики для зачисления золота за убийство
      */
-    public void takeDamage(float damage) {
+    public void takeDamage(float damage, CurrencyManager economy) {
+        if (!active) return;
+
         this.health -= damage;
         if (this.health <= 0) {
             this.active = false;
+            economy.addGold(20);
         }
     }
 }

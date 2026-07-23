@@ -2,6 +2,8 @@ package io.github.simple_game.core.model.entity;
 
 import com.badlogic.gdx.math.Vector2;
 
+import io.github.simple_game.core.service.CurrencyManager;
+
 /**
  * Класс, представляющий самонаводящийся снаряд в игровом мире.
  * Снаряд выпускается оборонительной башней, каждый кадр рассчитывает
@@ -45,14 +47,14 @@ public class Projectile extends Entity {
     }
 
     /**
-     * Обновляет физику полета снаряда каждый кадр.
+     * Перегруженный метод обновления физики полета снаряда каждый кадр.
      * Если цель пропадает или погибает раньше времени, снаряд деактивируется.
      * В остальных случаях снаряд летит к координатам врага с учетом игрового времени.
      *
      * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     * @param economy   ссылка на менеджер экономики для проброса во врага при попадании
      */
-    @Override
-    public void update(float deltaTime) {
+    public void update(float deltaTime, CurrencyManager economy) {
         if (!active) return;
 
         if (target == null || !target.isActive()) {
@@ -67,7 +69,7 @@ public class Projectile extends Entity {
 
         if (step >= distance) {
             position.set(targetPos);
-            hitTarget();
+            hitTarget(economy);
         } else {
             direction.nor().scl(step);
             position.add(direction);
@@ -75,12 +77,26 @@ public class Projectile extends Entity {
     }
 
     /**
-     * Внутренний метод обработки успешного столкновения снаряда с целью.
-     * Наносит урон врагу и переводит снаряд в неактивное состояние для удаления из игры.
+     * Базовый метод обновления без параметров.
+     * Оставлен пустым в соответствии с контрактом базоческого класса {@link Entity},
+     * так как логика снаряда требует обязательной передачи контекста экономики.
+     *
+     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
      */
-    private void hitTarget() {
+    @Override
+    public void update(float deltaTime) {
+        // Оставлен пустым, так как необходим вызов перегруженного метода update
+    }
+
+    /**
+     * Внутренний метод обработки успешного столкновения снаряда с целью.
+     * Наносит урон врагу с передачей контекста кошелька и переводит снаряд в неактивное состояние.
+     *
+     * @param economy ссылка на менеджер экономики для зачисления золота при убийстве цели
+     */
+    private void hitTarget(CurrencyManager economy) {
         active = false;
-        target.takeDamage(damage);
+        target.takeDamage(damage, economy);
     }
 
     /**

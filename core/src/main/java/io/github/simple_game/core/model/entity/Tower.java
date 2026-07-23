@@ -123,6 +123,15 @@ public class Tower extends Entity {
     }
 
     /**
+     * Возвращает стоимость следующего улучшения для текущего типа башни.
+     *
+     * @return стоимость улучшения в золотых монетах
+     */
+    public int getUpgradeCost() {
+        return upgradePath.getUpgradeCost(type);
+    }
+
+    /**
      * @return текущий радиус атаки (дальнобойность) башни в пикселях
      */
     public float getAttackRange() { return attackRange; }

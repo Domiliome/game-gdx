@@ -3,7 +3,6 @@ package io.github.simple_game.core.service;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
-
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.entity.TowerType;
 
@@ -11,7 +10,7 @@ import io.github.simple_game.core.model.entity.TowerType;
  * Сервис обработки пользовательского ввода и взаимодействия с игровым миром.
  * Наследуется от {@link InputAdapter} для перехвата событий нажатий. Отвечает за
  * трансформацию экранных координат в мировые координаты, выравнивание объектов
- * по сетке (Grid Snapping), а также за постройку и улучшение башен.
+ * по сетке (Grid Snapping), а также за постройку и улучшение башен с учетом игровой экономики.
  */
 public class InteractionService extends InputAdapter {
     private final GameLoop gameLoop;
@@ -64,35 +63,44 @@ public class InteractionService extends InputAdapter {
      * Проверяет доступность указанных координат для возведения новой башни.
      * Сканирует список существующих башен на предмет пересечения границ ячейки.
      * Если в целевых координатах уже установлена башня, метод автоматически
-     * запрашивает попытку её апгрейда.
+     * запрашивает попытку её апгрейда при условии наличия необходимого количества золота.
      *
      * @param x выровненная по сетке координата X потенциальной постройки
      * @param y выровненная по сетке координата Y потенциальной постройки
-     * @return true, если клетка абсолютно свободна для строительства; false, если ячейка занята
+     * @return true, если клетка абсолютно свободна для строительства и золота достаточно; иначе false
      */
     private boolean canPlaceTower(float x, float y) {
+        CurrencyManager economy = gameLoop.getCurrencyManager();
+
         for (Tower tower : gameLoop.getTowers()) {
             if (tower.getPosition().dst(x, y) < CELL_SIZE) {
-                tower.tryUpgrade();
+                int upgradeCost = tower.getUpgradeCost();
+                if (economy.spendGold(upgradeCost)) {
+                    tower.tryUpgrade();
+                }
                 return false;
             }
         }
-        return true;
+
+        return economy.getGold() >= selectedTowerType.getCost();
     }
 
     /**
      * Реализует непосредственное возведение оборонительного сооружения.
-     * Создает экземпляр объекта класса {@link Tower} с выбранным типом и
-     * регистрирует его в центральном игровом цикле.
+     * Проверяет экономический баланс игрока, списывает стоимость башни из кошелька
+     * и регистрирует новый объект в центральном игровом цикле.
      *
      * @param x выровненная координата X для центра башни
      * @param y выровненная координата Y для центра башни
      */
     private void buildTower(float x, float y) {
         if (selectedTowerType != null) {
-            Tower newTower = new Tower(x, y, selectedTowerType);
-            gameLoop.addTower(newTower);
-            System.out.println("Построена башня: " + selectedTowerType + " в координатах (" + x + ", " + y + ")");
+            CurrencyManager economy = gameLoop.getCurrencyManager();
+            if (economy.spendGold(selectedTowerType.getCost())) {
+                Tower newTower = new Tower(x, y, selectedTowerType);
+                gameLoop.addTower(newTower);
+                System.out.println("Построена башня: " + selectedTowerType + " в координатах (" + x + ", " + y + ")");
+            }
         }
     }
 
