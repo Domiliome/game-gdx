@@ -34,14 +34,14 @@ public class GameScreen extends ScreenAdapter {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 480, 800);
 
-
         gameLoop = new GameLoop();
         gameRenderer = new GameRenderer(gameLoop, camera);
         gameInterface = new GameInterface(gameLoop, camera);
-
         interactionService = new InteractionService(gameLoop, camera);
-        Gdx.input.setInputProcessor(interactionService);
+        com.badlogic.gdx.input.GestureDetector gestureDetector = new com.badlogic.gdx.input.GestureDetector(interactionService);
+        Gdx.input.setInputProcessor(gestureDetector);
     }
+
 
     /**
      * Главный метод отрисовки и логического шага, вызываемый фреймворком каждый кадр.

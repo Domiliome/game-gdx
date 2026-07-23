@@ -39,7 +39,7 @@ public class GameRenderer {
         this.shapeRenderer = new ShapeRenderer();
 
         // Загружаем текстуры из папки assets
-        this.mapTexture = new Texture(Gdx.files.internal("map.png"));
+        this.mapTexture = new Texture(Gdx.files.internal("map.jpg"));
         this.archerTowerTexture = new Texture(Gdx.files.internal("tower_archer.png"));
 
         // Включаем "ближайшую" фильтрацию, чтобы пиксель-арт оставался четким и не размывался
