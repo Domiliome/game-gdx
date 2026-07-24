@@ -28,7 +28,9 @@ io.github.simple_game.core
 │
 ├── 📂 service                       # Игровая логика и управление процессами
 │   ├── GameLoop.java                # Главный цикл игры, обновляет состояния всех объектов
-│   └── InteractionService.java      # Обработчик кликов/тапов с привязкой башен к сетке карты
+│   ├── InteractionService.java      # Обработчик кликов/тапов с привязкой башен к сетке карты
+│   ├── WaveManager.java             # 
+│   └── CurrencyManager.java         # 
 │
 └── 📂 presentation                  # Слой отображения и пользовательского интерфейса
     ├── 📂 screen
