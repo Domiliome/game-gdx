@@ -26,7 +26,7 @@ public class InteractionService implements GestureDetector.GestureListener {
     private final float minZoom = 0.5f;
     private final float maxZoom = 2.5f;
         // Коэффициент чувствительности перемещения (1.0f — без изменений, 0.5f — в два раза медленнее)
-    private static final float PAN_SENSITIVITY = 0.2f;
+    private static final float PAN_SENSITIVITY = 0.1f;
 
 
     // Вектор текущей скорости инерционного движения и коэффициент затухания (трения)
