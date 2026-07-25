@@ -35,12 +35,18 @@ public class GameScreen extends ScreenAdapter {
         camera.setToOrtho(false, 480, 800);
 
         gameLoop = new GameLoop();
-        gameRenderer = new GameRenderer(gameLoop, camera);
-        gameInterface = new GameInterface(gameLoop, camera);
+
+        // Сначала создаем сервис взаимодействия
         interactionService = new InteractionService(gameLoop, camera);
+
+        // Передаем его в конструктор GameRenderer!
+        gameRenderer = new GameRenderer(gameLoop, camera, interactionService);
+        gameInterface = new GameInterface(gameLoop, camera);
+
         com.badlogic.gdx.input.GestureDetector gestureDetector = new com.badlogic.gdx.input.GestureDetector(interactionService);
         Gdx.input.setInputProcessor(gestureDetector);
     }
+
 
 
     /**

@@ -1,7 +1,9 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
+
 import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.GameGrid;
 import io.github.simple_game.core.model.entity.Projectile;
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.movement.RoadPath;
@@ -12,6 +14,7 @@ import io.github.simple_game.core.model.movement.RoadPath;
  * логического обновления каждый кадр и передачу контекста данных между менеджерами.
  */
 public class GameLoop {
+
     private final Array<Enemy> enemies;
     private final Array<Tower> towers;
     private final Array<Projectile> projectiles;
@@ -20,11 +23,12 @@ public class GameLoop {
     private RoadPath roadPath;
     private final WaveManager waveManager;
     private final CurrencyManager currencyManager;
+    private final GameGrid gameGrid;
 
     /**
      * Создает новый игровой цикл. Инициализирует списки сущностей,
-     * строит дефолтный маршрут движения для уровня, запускает менеджер волн
-     * и подсистему игровой экономики.
+     * строит дефолтный маршрут движения для уровня, запускает менеджер волн,
+     * подсистему игровой экономики и размечает логическую сетку карты.
      */
     public GameLoop() {
         this.enemies = new Array<>();
@@ -35,6 +39,7 @@ public class GameLoop {
         initLevelPath();
         this.waveManager = new WaveManager(roadPath);
         this.currencyManager = new CurrencyManager(250, 20);
+        this.gameGrid = new GameGrid(roadPath);
     }
 
     /**
@@ -126,4 +131,9 @@ public class GameLoop {
      * @return ссылку на менеджер экономики и внутриигрового баланса игрока
      */
     public CurrencyManager getCurrencyManager() { return currencyManager; }
+
+    /**
+     * @return логическую двумерную сетку типов клеток текущей карты
+     */
+    public GameGrid getGameGrid() { return gameGrid; }
 }
