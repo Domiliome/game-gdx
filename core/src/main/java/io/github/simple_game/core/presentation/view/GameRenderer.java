@@ -147,10 +147,13 @@ public class GameRenderer {
      * Отрисовывает статичную графическую плашку магазина внизу экрана,
      * разделяет её на кнопки, выводит иконки товаров и текстовые ценники под ними.
      */
+        /**
+     * Отрисовывает динамическую плашку магазина внизу экрана на основе слотов из ShopService.
+     */
     private void renderShopUI() {
         if (interactionService == null) return;
 
-        // 1. Отрисовка полупрозрачного фантома башни, летящего за пальцем
+        // 1. Отрисовка фантома под пальцем
         if (interactionService.getDragAndDropManager().isDragging()) {
             batch.begin();
             batch.setColor(1, 1, 1, 0.6f);
@@ -159,34 +162,42 @@ public class GameRenderer {
             batch.end();
         }
 
-        // 2. Отрисовка нижней плашки магазина
+        // 2. Отрисовка подложки магазина
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.DARK_GRAY);
         shapeRenderer.rect(0, 0, WORLD_WIDTH, 100f);
-
-        shapeRenderer.setColor(Color.BLACK);
-        shapeRenderer.rect(158, 10, 4, 80);
-        shapeRenderer.rect(318, 10, 4, 80);
         shapeRenderer.end();
 
-        // 3. Отрисовка иконок башен внутри слотов магазина
+        // 3. Динамически рисуем границы слотов, иконки и ценники
+        com.badlogic.gdx.utils.Array<io.github.simple_game.core.model.entity.ShopSlot> slots = gameLoop.getShopService().getSlots();
+
+        // Сначала рисуем разделительные линии кнопок
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.BLACK);
+        for (io.github.simple_game.core.model.entity.ShopSlot slot : slots) {
+            com.badlogic.gdx.math.Rectangle bounds = slot.getBounds();
+            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
+        shapeRenderer.end();
+
+        // Затем рисуем текст и иконки башен
         batch.begin();
-        batch.draw(archerTowerTexture, 64, 44, 32, 32);  // Подняли иконку чуть выше (y=44), чтобы освободить место под текст
-        batch.draw(archerTowerTexture, 224, 44, 32, 32);
-        batch.draw(archerTowerTexture, 384, 44, 32, 32);
+        for (io.github.simple_game.core.model.entity.ShopSlot slot : slots) {
+            com.badlogic.gdx.math.Rectangle bounds = slot.getBounds();
 
-        // 4. Отрисовка ценников золотым цветом под каждой иконкой
-        String archerCost = io.github.simple_game.core.model.entity.TowerType.ARCHER.getCost() + "G";
-        String cannonCost = io.github.simple_game.core.model.entity.TowerType.CANNON.getCost() + "G";
-        String magicCost = io.github.simple_game.core.model.entity.TowerType.MAGIC.getCost() + "G";
+            // Находим центр текущей кнопки для иконки
+            float iconX = bounds.x + (bounds.width / 2f) - 16f;
+            float iconY = bounds.y + 44f;
+            batch.draw(archerTowerTexture, iconX, iconY, 32, 32);
 
-        // Позиционируем текст по центру каждого из трех слотов под иконками
-        shopFont.draw(batch, archerCost, 60, 25);
-        shopFont.draw(batch, cannonCost, 216, 25);
-        shopFont.draw(batch, magicCost, 376, 25);
-
+            // Находим центр кнопки для ценника
+            String costText = slot.getTowerType().getCost() + "G";
+            float textX = bounds.x + (bounds.width / 2f) - 16f; // Приблизительное центрирование текста
+            shopFont.draw(batch, costText, textX, bounds.y + 25f);
+        }
         batch.end();
     }
+
 
 
     public void dispose() {

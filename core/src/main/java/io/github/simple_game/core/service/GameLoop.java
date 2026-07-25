@@ -24,11 +24,12 @@ public class GameLoop {
     private final WaveManager waveManager;
     private final CurrencyManager currencyManager;
     private final GameGrid gameGrid;
+    private final ShopService shopService;
 
     /**
      * Создает новый игровой цикл. Инициализирует списки сущностей,
      * строит дефолтный маршрут движения для уровня, запускает менеджер волн,
-     * подсистему игровой экономики и размечает логическую сетку карты.
+     * подсистему игровой экономики, размечает логическую сетку карты и запускает сервис магазина.
      */
     public GameLoop() {
         this.enemies = new Array<>();
@@ -40,6 +41,7 @@ public class GameLoop {
         this.waveManager = new WaveManager(roadPath);
         this.currencyManager = new CurrencyManager(250, 20);
         this.gameGrid = new GameGrid(roadPath);
+        this.shopService = new ShopService();
     }
 
     /**
@@ -136,4 +138,9 @@ public class GameLoop {
      * @return логическую двумерную сетку типов клеток текущей карты
      */
     public GameGrid getGameGrid() { return gameGrid; }
+
+    /**
+     * @return ссылку на сервис управления динамическим магазином башен
+     */
+    public ShopService getShopService() { return shopService; }
 }

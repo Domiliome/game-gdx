@@ -16,7 +16,7 @@ public class InteractionService implements GestureDetector.GestureListener {
     private final GameLoop gameLoop;
     private final OrthographicCamera camera;
 
-    private TowerType selectedTowerType = TowerType.ARCHER;
+
     private final Vector3 touchPoint = new Vector3();
 
     private static final int CELL_SIZE = 32;
@@ -30,7 +30,7 @@ public class InteractionService implements GestureDetector.GestureListener {
     private static final float PAN_SENSITIVITY = 0.6f;
 
     private final DragAndDropManager dragAndDropManager;
-    private static final float SHOP_HEIGHT = 100f; // Высота магазина внизу экрана
+
 
     /**
      * Создает новый сервис взаимодействия и жестов.
@@ -53,11 +53,11 @@ public class InteractionService implements GestureDetector.GestureListener {
         touchPoint.set(x, y, 0);
         camera.unproject(touchPoint);
 
-        if (touchPoint.y <= SHOP_HEIGHT) {
-            TowerType typeToDrag = TowerType.ARCHER;
-            if (touchPoint.x > 160 && touchPoint.x <= 320) typeToDrag = TowerType.CANNON;
-            if (touchPoint.x > 320) typeToDrag = TowerType.MAGIC;
+        // Спрашиваем у магазина, выбрали ли мы какую-то башню по этим координатам
+        TowerType typeToDrag = gameLoop.getShopService().getSelectedTowerType(touchPoint.x, touchPoint.y);
 
+        if (typeToDrag != null) {
+            // Если выбрали — запускаем Drag-and-Drop
             dragAndDropManager.startDrag(typeToDrag, x, y);
             return true;
         }
@@ -65,6 +65,7 @@ public class InteractionService implements GestureDetector.GestureListener {
         velocity.set(0, 0);
         return false;
     }
+
 
     /**
      * Срабатывает при одиночном коротком тапе по экрану.
@@ -185,6 +186,6 @@ public class InteractionService implements GestureDetector.GestureListener {
     }
 
     public DragAndDropManager getDragAndDropManager() { return dragAndDropManager; }
-    public void setSelectedTowerType(TowerType selectedTowerType) { this.selectedTowerType = selectedTowerType; }
+
     @Override public boolean longPress(float x, float y) { return false; }
 }
