@@ -5,8 +5,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.Projectile;
 import io.github.simple_game.core.model.entity.Tower;
@@ -18,6 +20,7 @@ import io.github.simple_game.core.service.InteractionService;
  * Класс подсистемы отрисовки графики игрового мира и интерфейса магазина.
  */
 public class GameRenderer {
+    private final BitmapFont shopFont;
     private final GameLoop gameLoop;
     private final OrthographicCamera camera;
     private final InteractionService interactionService;
@@ -50,6 +53,10 @@ public class GameRenderer {
 
         this.mapTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         this.archerTowerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        this.shopFont = new BitmapFont();
+        this.shopFont.setColor(Color.GOLD); // Ценники будут золотого цвета
+        this.shopFont.getData().setScale(1.2f); // Чуть меньше, чем основной интерфейс волн
+        this.shopFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
     }
 
     public void render() {
@@ -136,9 +143,14 @@ public class GameRenderer {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
+    /**
+     * Отрисовывает статичную графическую плашку магазина внизу экрана,
+     * разделяет её на кнопки, выводит иконки товаров и текстовые ценники под ними.
+     */
     private void renderShopUI() {
         if (interactionService == null) return;
 
+        // 1. Отрисовка полупрозрачного фантома башни, летящего за пальцем
         if (interactionService.getDragAndDropManager().isDragging()) {
             batch.begin();
             batch.setColor(1, 1, 1, 0.6f);
@@ -147,6 +159,7 @@ public class GameRenderer {
             batch.end();
         }
 
+        // 2. Отрисовка нижней плашки магазина
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.DARK_GRAY);
         shapeRenderer.rect(0, 0, WORLD_WIDTH, 100f);
@@ -156,17 +169,32 @@ public class GameRenderer {
         shapeRenderer.rect(318, 10, 4, 80);
         shapeRenderer.end();
 
+        // 3. Отрисовка иконок башен внутри слотов магазина
         batch.begin();
-        batch.draw(archerTowerTexture, 64, 34, 32, 32);
-        batch.draw(archerTowerTexture, 224, 34, 32, 32);
-        batch.draw(archerTowerTexture, 384, 34, 32, 32);
+        batch.draw(archerTowerTexture, 64, 44, 32, 32);  // Подняли иконку чуть выше (y=44), чтобы освободить место под текст
+        batch.draw(archerTowerTexture, 224, 44, 32, 32);
+        batch.draw(archerTowerTexture, 384, 44, 32, 32);
+
+        // 4. Отрисовка ценников золотым цветом под каждой иконкой
+        String archerCost = io.github.simple_game.core.model.entity.TowerType.ARCHER.getCost() + "G";
+        String cannonCost = io.github.simple_game.core.model.entity.TowerType.CANNON.getCost() + "G";
+        String magicCost = io.github.simple_game.core.model.entity.TowerType.MAGIC.getCost() + "G";
+
+        // Позиционируем текст по центру каждого из трех слотов под иконками
+        shopFont.draw(batch, archerCost, 60, 25);
+        shopFont.draw(batch, cannonCost, 216, 25);
+        shopFont.draw(batch, magicCost, 376, 25);
+
         batch.end();
     }
+
 
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();
         mapTexture.dispose();
         archerTowerTexture.dispose();
+        shopFont.dispose();
+
     }
 }
