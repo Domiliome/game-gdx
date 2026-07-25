@@ -8,10 +8,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
+import com.badlogic.gdx.utils.Array;
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.Projectile;
 import io.github.simple_game.core.model.entity.Tower;
+import io.github.simple_game.core.model.entity.TowerType;
+import io.github.simple_game.core.model.entity.ShopSlot;
 import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
@@ -20,27 +22,22 @@ import io.github.simple_game.core.service.InteractionService;
  * Класс подсистемы отрисовки графики игрового мира и интерфейса магазина.
  */
 public class GameRenderer {
-    private final BitmapFont shopFont;
     private final GameLoop gameLoop;
     private final OrthographicCamera camera;
     private final InteractionService interactionService;
     private final SpriteBatch batch;
     private final ShapeRenderer shapeRenderer;
+    private final BitmapFont shopFont;
 
     private final Texture mapTexture;
     private final Texture archerTowerTexture;
+    private final Texture cannonTowerTexture;
+    private final Texture magicTowerTexture;
 
     private static final int CELL_SIZE = 32;
     private static final int WORLD_WIDTH = 480;
     private static final int WORLD_HEIGHT = 800;
 
-    /**
-     * Создает новый рендерер игрового мира и загружает пиксельные ассеты.
-     *
-     * @param gameLoop           актуальная ссылка на игровой цикл
-     * @param camera             ортографическая камера экрана
-     * @param interactionService ссылка на сервис взаимодействия для Drag and Drop превью
-     */
     public GameRenderer(GameLoop gameLoop, OrthographicCamera camera, InteractionService interactionService) {
         this.gameLoop = gameLoop;
         this.camera = camera;
@@ -48,15 +45,29 @@ public class GameRenderer {
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
 
-        this.mapTexture = new Texture(Gdx.files.internal("map.png"));
-        this.archerTowerTexture = new Texture(Gdx.files.internal("tower_archer.png"));
-
-        this.mapTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        this.archerTowerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         this.shopFont = new BitmapFont();
-        this.shopFont.setColor(Color.GOLD); // Ценники будут золотого цвета
-        this.shopFont.getData().setScale(1.2f); // Чуть меньше, чем основной интерфейс волн
+        this.shopFont.setColor(Color.GOLD);
+        this.shopFont.getData().setScale(1.2f);
         this.shopFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        this.mapTexture = new Texture(Gdx.files.internal("map.png"));
+        this.mapTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        this.archerTowerTexture = new Texture(Gdx.files.internal("tower_archer.png"));
+        this.cannonTowerTexture = new Texture(Gdx.files.internal("tower_cannon.png"));
+        this.magicTowerTexture = new Texture(Gdx.files.internal("tower_magic.png"));
+
+        this.archerTowerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        this.cannonTowerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        this.magicTowerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+    }
+
+    private Texture getTextureForType(TowerType type) {
+        return switch (type) {
+            case ARCHER -> archerTowerTexture;
+            case CANNON -> cannonTowerTexture;
+            case MAGIC  -> magicTowerTexture;
+        };
     }
 
     public void render() {
@@ -75,7 +86,7 @@ public class GameRenderer {
         for (Tower tower : gameLoop.getTowers()) {
             float drawX = tower.getPosition().x - 16f;
             float drawY = tower.getPosition().y - 16f;
-            batch.draw(archerTowerTexture, drawX, drawY, 32, 32);
+            batch.draw(getTextureForType(tower.getType()), drawX, drawY, 32, 32);
         }
         batch.end();
     }
@@ -109,7 +120,6 @@ public class GameRenderer {
         }
         shapeRenderer.end();
 
-        // Безопасно отрисовываем превью сетки через прямую ссылку
         if (interactionService != null) {
             interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
         }
@@ -143,69 +153,54 @@ public class GameRenderer {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    /**
-     * Отрисовывает статичную графическую плашку магазина внизу экрана,
-     * разделяет её на кнопки, выводит иконки товаров и текстовые ценники под ними.
-     */
-        /**
-     * Отрисовывает динамическую плашку магазина внизу экрана на основе слотов из ShopService.
-     */
     private void renderShopUI() {
         if (interactionService == null) return;
 
-        // 1. Отрисовка фантома под пальцем
         if (interactionService.getDragAndDropManager().isDragging()) {
-            batch.begin();
-            batch.setColor(1, 1, 1, 0.6f);
-            batch.draw(archerTowerTexture, interactionService.getDragAndDropManager().getCurrentX() - 16, interactionService.getDragAndDropManager().getCurrentY() - 16, 32, 32);
-            batch.setColor(1, 1, 1, 1f);
-            batch.end();
+            TowerType draggingType = interactionService.getDragAndDropManager().getDraggingType();
+            if (draggingType != null) {
+                batch.begin();
+                batch.setColor(1, 1, 1, 0.6f);
+                batch.draw(getTextureForType(draggingType), interactionService.getDragAndDropManager().getCurrentX() - 16, interactionService.getDragAndDropManager().getCurrentY() - 16, 32, 32);
+                batch.setColor(1, 1, 1, 1f);
+                batch.end();
+            }
         }
 
-        // 2. Отрисовка подложки магазина
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.DARK_GRAY);
         shapeRenderer.rect(0, 0, WORLD_WIDTH, 100f);
         shapeRenderer.end();
 
-        // 3. Динамически рисуем границы слотов, иконки и ценники
-        com.badlogic.gdx.utils.Array<io.github.simple_game.core.model.entity.ShopSlot> slots = gameLoop.getShopService().getSlots();
+        Array<ShopSlot> slots = gameLoop.getShopService().getSlots();
 
-        // Сначала рисуем разделительные линии кнопок
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.BLACK);
-        for (io.github.simple_game.core.model.entity.ShopSlot slot : slots) {
-            com.badlogic.gdx.math.Rectangle bounds = slot.getBounds();
-            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        for (ShopSlot slot : slots) {
+            shapeRenderer.rect(slot.getBounds().x, slot.getBounds().y, slot.getBounds().width, slot.getBounds().height);
         }
         shapeRenderer.end();
 
-        // Затем рисуем текст и иконки башен
         batch.begin();
-        for (io.github.simple_game.core.model.entity.ShopSlot slot : slots) {
-            com.badlogic.gdx.math.Rectangle bounds = slot.getBounds();
+        for (ShopSlot slot : slots) {
+            float iconX = slot.getBounds().x + (slot.getBounds().width / 2f) - 16f;
+            float iconY = slot.getBounds().y + 44f;
+            batch.draw(getTextureForType(slot.getTowerType()), iconX, iconY, 32, 32);
 
-            // Находим центр текущей кнопки для иконки
-            float iconX = bounds.x + (bounds.width / 2f) - 16f;
-            float iconY = bounds.y + 44f;
-            batch.draw(archerTowerTexture, iconX, iconY, 32, 32);
-
-            // Находим центр кнопки для ценника
             String costText = slot.getTowerType().getCost() + "G";
-            float textX = bounds.x + (bounds.width / 2f) - 16f; // Приблизительное центрирование текста
-            shopFont.draw(batch, costText, textX, bounds.y + 25f);
+            float textX = slot.getBounds().x + (slot.getBounds().width / 2f) - 16f;
+            shopFont.draw(batch, costText, textX, slot.getBounds().y + 25f);
         }
         batch.end();
     }
 
-
-
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();
+        shopFont.dispose();
         mapTexture.dispose();
         archerTowerTexture.dispose();
-        shopFont.dispose();
-
+        cannonTowerTexture.dispose();
+        magicTowerTexture.dispose();
     }
 }
