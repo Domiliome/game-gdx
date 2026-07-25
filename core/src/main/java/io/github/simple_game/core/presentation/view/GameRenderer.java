@@ -9,11 +9,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
+
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.Projectile;
+import io.github.simple_game.core.model.entity.ShopSlot;
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.entity.TowerType;
-import io.github.simple_game.core.model.entity.ShopSlot;
 import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
@@ -34,7 +35,7 @@ public class GameRenderer {
     private final Texture cannonTowerTexture;
     private final Texture magicTowerTexture;
 
-    private static final int CELL_SIZE = 32;
+    private static final int CELL_SIZE = 64;
     private static final int WORLD_WIDTH = 480;
     private static final int WORLD_HEIGHT = 800;
 
@@ -84,9 +85,9 @@ public class GameRenderer {
         batch.draw(mapTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
         for (Tower tower : gameLoop.getTowers()) {
-            float drawX = tower.getPosition().x - 16f;
-            float drawY = tower.getPosition().y - 16f;
-            batch.draw(getTextureForType(tower.getType()), drawX, drawY, 32, 32);
+            float drawX = tower.getPosition().x - 32f; // Смещение на половину от 64
+            float drawY = tower.getPosition().y - 32f;
+            batch.draw(getTextureForType(tower.getType()), drawX, drawY, 64, 64); // Размер 64x64
         }
         batch.end();
     }
@@ -153,46 +154,58 @@ public class GameRenderer {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    private void renderShopUI() {
-        if (interactionService == null) return;
+        private void renderShopUI() {
+            if (interactionService == null) return;
 
-        if (interactionService.getDragAndDropManager().isDragging()) {
-            TowerType draggingType = interactionService.getDragAndDropManager().getDraggingType();
-            if (draggingType != null) {
-                batch.begin();
-                batch.setColor(1, 1, 1, 0.6f);
-                batch.draw(getTextureForType(draggingType), interactionService.getDragAndDropManager().getCurrentX() - 16, interactionService.getDragAndDropManager().getCurrentY() - 16, 32, 32);
-                batch.setColor(1, 1, 1, 1f);
-                batch.end();
+            if (interactionService.getDragAndDropManager().isDragging()) {
+                TowerType draggingType = interactionService.getDragAndDropManager().getDraggingType();
+                if (draggingType != null) {
+                    batch.begin();
+                    batch.setColor(1, 1, 1, 0.6f);
+                    batch.draw(getTextureForType(draggingType),
+                            interactionService.getDragAndDropManager().getCurrentX() - 32f,
+                            interactionService.getDragAndDropManager().getCurrentY() - 32f,
+                            64, 64); // Рисуем фантом крупным
+                    batch.setColor(1, 1, 1, 1f);
+                    batch.end();
+                }
             }
-        }
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.DARK_GRAY);
-        shapeRenderer.rect(0, 0, WORLD_WIDTH, 100f);
-        shapeRenderer.end();
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(Color.DARK_GRAY);
+            shapeRenderer.rect(0, 0, WORLD_WIDTH, 100f);
+            shapeRenderer.end();
 
-        Array<ShopSlot> slots = gameLoop.getShopService().getSlots();
+            Array<ShopSlot> slots = gameLoop.getShopService().getSlots();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.BLACK);
-        for (ShopSlot slot : slots) {
-            shapeRenderer.rect(slot.getBounds().x, slot.getBounds().y, slot.getBounds().width, slot.getBounds().height);
-        }
-        shapeRenderer.end();
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.BLACK);
+            for (ShopSlot slot : slots) {
+                shapeRenderer.rect(slot.getBounds().x, slot.getBounds().y, slot.getBounds().width, slot.getBounds().height);
+            }
+            shapeRenderer.end();
 
-        batch.begin();
-        for (ShopSlot slot : slots) {
-            float iconX = slot.getBounds().x + (slot.getBounds().width / 2f) - 16f;
-            float iconY = slot.getBounds().y + 44f;
-            batch.draw(getTextureForType(slot.getTowerType()), iconX, iconY, 32, 32);
+            batch.begin();
+            for (ShopSlot slot : slots) {
+                float slotX = slot.getBounds().x;
+                float slotWidth = slot.getBounds().width;
 
-            String costText = slot.getTowerType().getCost() + "G";
-            float textX = slot.getBounds().x + (slot.getBounds().width / 2f) - 16f;
-            shopFont.draw(batch, costText, textX, slot.getBounds().y + 25f);
-        }
-        batch.end();
+                // Вычисляем центр слота по горизонтали для крупной иконки 64x64
+                float iconX = slotX + (slotWidth / 2f) - 32f;
+                // Поднимаем иконку повыше, чтобы снизу осталось место для текста
+                float iconY = 28f;
+
+                // Рисуем иконку башни увеличенной в 2 раза
+                batch.draw(getTextureForType(slot.getTowerType()), iconX, iconY, 64, 64);
+
+                // Вычисляем центр для текста ценника под иконкой
+                String costText = slot.getTowerType().getCost() + "G";
+                float textX = slotX + (slotWidth / 2f) - 16f; // Приблизительный сдвиг под ширину шрифта
+                shopFont.draw(batch, costText, textX, 20f);
+            }
+            batch.end();
     }
+
 
     public void dispose() {
         batch.dispose();

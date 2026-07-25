@@ -21,7 +21,7 @@ public class DragAndDropManager {
     private float currentX = 0f;
     private float currentY = 0f;
 
-    private static final int CELL_SIZE = 32;
+    private static final int CELL_SIZE = 64;
 
     public DragAndDropManager(GameLoop gameLoop, OrthographicCamera camera) {
         this.gameLoop = gameLoop;
@@ -56,8 +56,8 @@ public class DragAndDropManager {
         isDragging = false;
 
         // Выравниваем финальную точку по сетке
-        float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
-        float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + 32f;
 
         CurrencyManager economy = gameLoop.getCurrencyManager();
 
@@ -84,8 +84,8 @@ public class DragAndDropManager {
     public void drawPreview(ShapeRenderer shapeRenderer) {
         if (!isDragging || draggingType == null) return;
 
-        float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
-        float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + 32f;
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         // Если строить можно — подсвечиваем клетку зеленым, если нельзя (дорога/занято) — красным
@@ -96,7 +96,7 @@ public class DragAndDropManager {
         }
 
         // Рисуем квадрат ячейки под сетку
-        shapeRenderer.rect(snappedX - 16, snappedY - 16, CELL_SIZE, CELL_SIZE);
+        shapeRenderer.rect(snappedX - 32, snappedY - 32, CELL_SIZE, CELL_SIZE);
         shapeRenderer.end();
 
         // Рисуем радиус атаки будущей башни

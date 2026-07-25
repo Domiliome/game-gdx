@@ -10,9 +10,10 @@ import io.github.simple_game.core.model.movement.RoadPath;
  * возможности строительства оборонительных сооружений.
  */
 public class GameGrid {
-    private static final int CELL_SIZE = 32;
-    private static final int COLUMNS = 15; // 480 / 32
-    private static final int ROWS = 25;    // 800 / 32
+    private static final int CELL_SIZE = 64;
+    private static final int COLUMNS = 8;    // 480 / 64 = 7.5 (округляем до 8 для запаса по краям)
+    private static final int ROWS = 13;     // 800 / 64 = 12.5 (округляем до 13)
+
 
     // Типы клеток
     public static final int CELL_GRASS = 0;

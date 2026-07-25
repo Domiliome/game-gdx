@@ -19,7 +19,8 @@ public class InteractionService implements GestureDetector.GestureListener {
 
     private final Vector3 touchPoint = new Vector3();
 
-    private static final int CELL_SIZE = 32;
+    private static final int CELL_SIZE = 64;
+
 
     private float initialZoom = 1.0f;
     private final float minZoom = 0.5f;
@@ -76,8 +77,9 @@ public class InteractionService implements GestureDetector.GestureListener {
         touchPoint.set(x, y, 0);
         camera.unproject(touchPoint);
 
-        float snappedX = ((int) touchPoint.x / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
-        float snappedY = ((int) touchPoint.y / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedX = ((int) touchPoint.x / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedY = ((int) touchPoint.y / CELL_SIZE) * CELL_SIZE + 32f;
+
 
         CurrencyManager economy = gameLoop.getCurrencyManager();
         for (Tower tower : gameLoop.getTowers()) {
