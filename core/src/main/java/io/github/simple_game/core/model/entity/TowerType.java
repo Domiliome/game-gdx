@@ -22,7 +22,7 @@ public enum TowerType {
      * Магическая башня. Обладает максимальным радиусом поражения на карте
      * и сбалансированными боевыми показателями урона и скорости перезарядки.
      */
-    MAGIC(25f, 180f, 1.2f, 200);
+    MAGIC(25f, 180f, 1.0f, 200);
 
     private final float baseDamage;
     private final float baseRange;
