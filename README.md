@@ -75,6 +75,10 @@ io.github.simple_game.core
 ```bash
 ./gradlew clean assembleDebug
 ```
+**Сброс до последнего коммита**
+```
+git reset --hard HEAD
+```
 
 ---
 
