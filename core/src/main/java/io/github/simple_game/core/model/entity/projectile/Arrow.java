@@ -1,5 +1,7 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.projectile;
 
+import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 /**
  * Специализированный снаряд (стрела), выпускаемый башней лучников.
  * Хранит информацию о том, является ли выстрел критическим, для последующей

@@ -1,4 +1,4 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.map;
 
 import java.util.Objects;
 

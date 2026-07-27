@@ -2,8 +2,8 @@ package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
 
-import io.github.simple_game.core.model.entity.ShopSlot;
-import io.github.simple_game.core.model.entity.TowerType;
+import io.github.simple_game.core.model.entity.map.ShopSlot;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 
 /**
  * Сервис управления магазином. Автоматически распределяет башни по кнопкам

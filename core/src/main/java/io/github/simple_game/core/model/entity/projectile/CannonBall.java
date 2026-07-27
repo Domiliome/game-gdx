@@ -1,8 +1,10 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.projectile;
 
 import com.badlogic.gdx.utils.Array;
 import io.github.simple_game.core.service.CurrencyManager;
 import io.github.simple_game.core.service.GameLoop;
+import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 
 /**
  * Специализированный артиллерийский снаряд (ядро), наносящий

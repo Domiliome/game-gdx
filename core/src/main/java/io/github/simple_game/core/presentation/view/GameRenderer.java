@@ -10,12 +10,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 
-import io.github.simple_game.core.model.entity.Arrow;
+import io.github.simple_game.core.model.entity.projectile.Arrow;
 import io.github.simple_game.core.model.entity.Enemy;
-import io.github.simple_game.core.model.entity.Projectile;
-import io.github.simple_game.core.model.entity.ShopSlot;
-import io.github.simple_game.core.model.entity.Tower;
-import io.github.simple_game.core.model.entity.TowerType;
+import io.github.simple_game.core.model.entity.projectile.Projectile;
+import io.github.simple_game.core.model.entity.map.ShopSlot;
+import io.github.simple_game.core.model.entity.tower.Tower;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;

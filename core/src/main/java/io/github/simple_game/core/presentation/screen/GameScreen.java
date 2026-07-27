@@ -4,42 +4,39 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
 
-
 /**
- * Класс игрового экрана, управляющий жизненным циклом и рендерингом основного игрового процесса.
- * Связывает воедино центральную логику обновления мира ({@link GameLoop}),
- * систему отрисовки графики ({@link GameRenderer}), пользовательский текстовый интерфейс ({@link GameInterface})
- * и обработку пользовательского ввода ({@link InteractionService}).
+ * Класс игрового экрана, управляющий жизненным циклом и адаптивным рендерингом основного игрового процесса.
+ * Связывает воедино центральную логику обновления мира ({@link GameLoop}) и систему адаптивного
+ * масштабирования ({@link Viewport}) под любые экраны смартфонов.
  */
 public class GameScreen extends ScreenAdapter {
     private OrthographicCamera camera;
+    private Viewport viewport; // Добавляем адаптивный слой масштабирования
+
     private GameLoop gameLoop;
     private GameRenderer gameRenderer;
     private GameInterface gameInterface;
     private InteractionService interactionService;
 
-    /**
-     * Вызывается автоматически LibGDX в момент переключения на этот экран и его активации.
-     * Отвечает за инициализацию ортографической камеры с фиксированным виртуальным разрешением,
-     * создание основного игрового цикла, подсистем отображения и регистрацию обработчика нажатий.
-     */
     @Override
     public void show() {
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 480, 800);
+
+        // Инициализируем FitViewport с фиксированным виртуальным пиксельным разрешением 480x800
+        viewport = new FitViewport(480, 800, camera);
+        viewport.apply(true); // Применяем настройки и центрируем камеру в мире
 
         gameLoop = new GameLoop();
-
-        // Сначала создаем сервис взаимодействия
         interactionService = new InteractionService(gameLoop, camera);
 
-        // Передаем его в конструктор GameRenderer!
+        // Передаем viewport в рендерер и интерфейс, чтобы они знали актуальные размеры
         gameRenderer = new GameRenderer(gameLoop, camera, interactionService);
         gameInterface = new GameInterface(gameLoop, camera);
 
@@ -47,40 +44,35 @@ public class GameScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(gestureDetector);
     }
 
-
-
-    /**
-     * Главный метод отрисовки и логического шага, вызываемый фреймворком каждый кадр.
-     * Производит очистку буфера экрана черным цветом, обновляет состояние игрового мира с учетом прошедшего времени,
-     * синхронизирует матрицу камеры и последовательно рендерит графические объекты, а поверх них — слой интерфейса.
-     *
-     * @param delta время, прошедшее с момента отрисовки предыдущего кадра в секундах
-     */
- @Override
+    @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // 1. Обновляем игровой цикл
         gameLoop.update(delta);
 
-        // 2. Обновляем плавное скольжение камеры после свайпа пальцем
         if (interactionService != null) {
             interactionService.updateInertia(delta);
         }
 
         camera.update();
 
-        // 3. Отрисовка
+        // Сначала рисуем карту, башни и врагов
         gameRenderer.render();
+
+        // Поверх игрового мира рисуем текст интерфейса
         gameInterface.render();
     }
 
     /**
-     * Вызывается при закрытии игры или смене экрана для освобождения ресурсов.
-     * Гарантирует принудительную очистку памяти графических контекстов рендерера и интерфейса,
-     * предотвращая утечки ресурсов на целевых платформах.
+     * Важнейший метод для мобильной адаптивности.
+     * Передает новые физические размеры экрана в Viewport для пересчета пропорций без искажений пикселей.
      */
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height, true); // true принудительно центрирует камеру после изменения размеров
+    }
+
     @Override
     public void dispose() {
         gameRenderer.dispose();

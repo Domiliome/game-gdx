@@ -1,7 +1,9 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.tower;
 
 import com.badlogic.gdx.utils.Array;
 import io.github.simple_game.core.service.GameLoop;
+import io.github.simple_game.core.model.entity.projectile.Projectile;
+import io.github.simple_game.core.model.entity.projectile.CannonBall;
 
 /**
  * Артиллерийская пушка. Обладает сокрушительным разовым уроном.

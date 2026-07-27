@@ -5,11 +5,12 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
-import io.github.simple_game.core.model.entity.ArcherTower;
-import io.github.simple_game.core.model.entity.CannonTower;
-import io.github.simple_game.core.model.entity.MagicTower;
-import io.github.simple_game.core.model.entity.Tower;
-import io.github.simple_game.core.model.entity.TowerType;
+import io.github.simple_game.core.model.entity.tower.ArcherTower;
+import io.github.simple_game.core.model.entity.tower.CannonTower;
+import io.github.simple_game.core.model.entity.tower.MagicTower;
+import io.github.simple_game.core.model.entity.tower.Tower;
+import io.github.simple_game.core.model.entity.tower.TowerType;
+
 
 /**
  * Менеджер, управляющий логикой перетаскивания башен из магазина на карту (Drag and Drop).

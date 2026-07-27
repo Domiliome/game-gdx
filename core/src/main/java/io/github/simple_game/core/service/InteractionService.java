@@ -5,8 +5,8 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-import io.github.simple_game.core.model.entity.Tower;
-import io.github.simple_game.core.model.entity.TowerType;
+import io.github.simple_game.core.model.entity.tower.Tower;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 
 /**
  * Сервис обработки пользовательского ввода и сложных жестов взаимодействия с игровым миром.

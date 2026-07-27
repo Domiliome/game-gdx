@@ -1,4 +1,4 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.map;
 
 import com.badlogic.gdx.math.Vector2;
 

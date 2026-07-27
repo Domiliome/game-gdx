@@ -1,7 +1,10 @@
-package io.github.simple_game.core.model.entity;
+package io.github.simple_game.core.model.entity.projectile;
 
 import com.badlogic.gdx.math.Vector2;
 
+import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.Entity;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.service.CurrencyManager;
 
 /**
