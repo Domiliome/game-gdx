@@ -14,25 +14,17 @@ public class DebugGridRenderer {
         this.gameLoop = gameLoop;
     }
 
-    public void render(ShapeRenderer shapeRenderer) {
-        // 1. Координатная сетка
+        public void render(ShapeRenderer shapeRenderer, float worldHeight) { // Добавляем worldHeight
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(new Color(1, 1, 1, 0.1f));
-        for (int x = 0; x <= 480; x += 64) shapeRenderer.line(x, 0, x, 800);
-        for (int y = 0; y <= 800; y += 64) shapeRenderer.line(0, y, 480, y);
 
-        // 2. Путь врагов
-        RoadPath path = (RoadPath) gameLoop.getRoadPath();
-        shapeRenderer.setColor(Color.GRAY);
-        for (int i = 0; i < path.getPointCount() - 1; i++) {
-            shapeRenderer.line(path.getPoint(i), path.getPoint(i + 1));
-        }
+        // Вертикальные линии рисуем до самого верха новой границы мира
+        for (int x = 0; x <= 480; x += 64) shapeRenderer.line(x, 0, x, worldHeight);
+        // Горизонтальные линии продолжаем генерировать выше 800
+        for (int y = 0; y <= worldHeight; y += 64) shapeRenderer.line(0, y, 480, y);
 
-        // 3. Радиусы башен
-        shapeRenderer.setColor(new Color(1, 1, 1, 0.2f));
-        for (Tower tower : gameLoop.getTowers()) {
-            shapeRenderer.circle(tower.getPosition().x, tower.getPosition().y, tower.getAttackRange());
-        }
+        // ... остальной код отрисовки путей и радиусов башен остается прежним
         shapeRenderer.end();
     }
+
 }

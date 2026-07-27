@@ -41,33 +41,33 @@ public class GameRenderer {
     }
 
         public void render() {
-        batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
+            batch.setProjectionMatrix(camera.combined);
+            shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // 1. Отрисовка спрайтов (карта, башни)
-        batch.begin();
-        worldSpriteRenderer.render(batch);
-        batch.end();
+            // Получаем текущую динамическую высоту расширенного игрового мира
+            float currentWorldHeight = camera.viewportHeight;
 
-        // 2. Отрисовка линий и фигур (сетка, враги)
-        debugGridRenderer.render(shapeRenderer);
-        entityRenderer.render(shapeRenderer);
+            // 1. Отрисовка спрайтов (передаем высоту)
+            batch.begin();
+            worldSpriteRenderer.render(batch, currentWorldHeight);
+            batch.end();
 
-        // 3. Отрисовка элементов с прозрачностью (полоски здоровья)
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        healthBarRenderer.render(shapeRenderer);
+            // 2. Отрисовка линий и сетки (передаем высоту)
+            debugGridRenderer.render(shapeRenderer, currentWorldHeight);
+            entityRenderer.render(shapeRenderer);
 
-        // 4. Отрисовка превью перетаскивания башни
-        if (interactionService != null && interactionService.getDragAndDropManager().isDragging()) {
-            // Исправлено: удалены лишние shapeRenderer.begin/end, так как drawPreview() вызывает их сам
-            interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
+            // 3. Отрисовка элементов с прозрачностью (полоски здоровья)
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            healthBarRenderer.render(shapeRenderer);
 
-            // Отрисовка полупрозрачной текстуры башни под пальцем
-            renderGhostPhantom();
-        }
-        Gdx.gl.glDisable(GL20.GL_BLEND);
+            if (interactionService != null && interactionService.getDragAndDropManager().isDragging()) {
+                interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
+                renderGhostPhantom();
+            }
+            Gdx.gl.glDisable(GL20.GL_BLEND);
     }
+
 
 
     private void renderGhostPhantom() {

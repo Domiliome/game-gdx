@@ -5,13 +5,14 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.input.GestureDetector;
 
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
+import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
 
@@ -25,24 +26,22 @@ public class GameScreen extends ScreenAdapter {
     private GameRenderer gameRenderer;
     private GameInterface gameInterface;
     private InteractionService interactionService;
+    private CameraGestureService cameraGestureService;
 
     @Override
     public void show() {
         worldCamera = new OrthographicCamera();
-        worldViewport = new FitViewport(480, 800, worldCamera);
+        worldViewport = new ExtendViewport(480, 800, worldCamera);
         uiCamera = new OrthographicCamera();
         uiViewport = new ScreenViewport(uiCamera);
 
         gameLoop = new GameLoop();
         interactionService = new InteractionService(gameLoop, worldViewport);
+        cameraGestureService = new CameraGestureService(worldViewport);
         gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
-        // Исправлено: передаем все 4 необходимые зависимости для модульного Scene2D
         gameInterface = new GameInterface(
-            gameLoop,
-            uiViewport,
-            gameRenderer,
-            interactionService.getDragAndDropManager()
+            gameLoop, uiViewport, gameRenderer, interactionService.getDragAndDropManager()
         );
 
         initInputProcessing();
@@ -50,9 +49,8 @@ public class GameScreen extends ScreenAdapter {
 
     private void initInputProcessing() {
         InputMultiplexer multiplexer = new InputMultiplexer();
-        // Первым делом клики и свайпы забирает Scene2D интерфейс (ShopPanel)
         multiplexer.addProcessor(gameInterface.getStage());
-        // Вторым делом — жесты камеры и тапы по сетке игрового мира
+        multiplexer.addProcessor(new GestureDetector(cameraGestureService));
         multiplexer.addProcessor(new GestureDetector(interactionService));
         Gdx.input.setInputProcessor(multiplexer);
     }
@@ -63,16 +61,14 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         gameLoop.update(delta);
-        if (interactionService != null) {
-            interactionService.updateInertia(delta);
+        if (cameraGestureService != null) {
+            cameraGestureService.updateInertia(delta);
         }
 
-        // РЕНДЕР СЛОЯ 1: Игровой мир
         worldViewport.apply();
         worldCamera.update();
         gameRenderer.render();
 
-        // РЕНДЕР СЛОЯ 2: Интерфейс (UI)
         uiViewport.apply();
         uiCamera.update();
         gameInterface.render();
@@ -80,7 +76,18 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void resize(int width, int height) {
-        worldViewport.update(width, height, true);
+        // Изменяем параметр центрирования на false, чтобы привязать (0,0) мира к углу экрана
+        worldViewport.update(width, height, false);
+
+        // Вручную центрируем камеру строго по фактическим динамическим границам ExtendViewport
+        worldCamera.position.set(
+            worldViewport.getWorldWidth() / 2f,
+            worldViewport.getWorldHeight() / 2f,
+            0
+        );
+        worldCamera.update(); // Принудительно обновляем матрицы камеры после изменения позиции
+
+        // Для UI оставляем стандартное обновление (ScreenViewport центрируется правильно сам)
         uiViewport.update(width, height, true);
     }
 

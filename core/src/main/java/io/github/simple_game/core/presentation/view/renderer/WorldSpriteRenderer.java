@@ -25,14 +25,17 @@ public class WorldSpriteRenderer {
         mapTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
     }
 
-    public void render(SpriteBatch batch) {
-        batch.draw(mapTexture, 0, 0, 480, 800);
+    public void render(SpriteBatch batch, float worldHeight) {
+
+        batch.draw(mapTexture, 0, 0, 480, worldHeight);
+
         for (Tower tower : gameLoop.getTowers()) {
             float x = tower.getPosition().x - 32f;
             float y = tower.getPosition().y - 32f;
             batch.draw(getTexture(tower.getType()), x, y, 64, 64);
         }
     }
+
 
     public Texture getTexture(TowerType type) {
         return switch (type) {

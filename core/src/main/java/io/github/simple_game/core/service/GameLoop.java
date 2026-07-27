@@ -10,44 +10,25 @@ import io.github.simple_game.core.model.movement.RoadPath;
 
 /**
  * Ядро игрового процесса (Центральный игровой цикл).
- * Отвечает за хранение списков всех сущностей на карте, координацию их
- * логического обновления каждый кадр и передачу контекста данных между менеджерами.
+ * Координирует работу подсистем и менеджеров верхнего уровня.
  */
 public class GameLoop {
-
-    private final Array<Enemy> enemies;
-    private final Array<Tower> towers;
-    private final Array<Projectile> projectiles;
-    private final Array<Projectile> projectilesToSpawn;
-
-    private RoadPath roadPath;
+    private final EntityManager entityManager;
     private final WaveManager waveManager;
     private final CurrencyManager currencyManager;
     private final GameGrid gameGrid;
     private final ShopService shopService;
+    private RoadPath roadPath;
 
-    /**
-     * Создает новый игровой цикл. Инициализирует списки сущностей,
-     * строит дефолтный маршрут движения для уровня, запускает менеджер волн,
-     * подсистему игровой экономики, размечает логическую сетку карты и запускает сервис магазина.
-     */
     public GameLoop() {
-        this.enemies = new Array<>();
-        this.towers = new Array<>();
-        this.projectiles = new Array<>();
-        this.projectilesToSpawn = new Array<>();
-
         initLevelPath();
+        this.entityManager = new EntityManager();
         this.waveManager = new WaveManager(roadPath);
         this.currencyManager = new CurrencyManager(250, 20);
         this.gameGrid = new GameGrid(roadPath);
         this.shopService = new ShopService();
     }
 
-    /**
-     * Внутренний метод для формирования статических точек пути (вейпоинтов),
-     * по которым наземные враги будут перемещаться от точки спавна до базы игрока.
-     */
     private void initLevelPath() {
         roadPath = new RoadPath();
         roadPath.addPoint(240, 800);
@@ -59,88 +40,29 @@ public class GameLoop {
     }
 
     /**
-     * Главный метод такта игры. Непрерывно вызывается из игрового экрана.
-     * Последовательно запускает логику спавна волн, передвижения врагов, ИИ башен и полета снарядов.
-     * Передает контекст экономики (CurrencyManager) сущностям для начисления наград или списания жизней.
-     * Использует обратные циклы для безопасного удаления уничтоженных сущностей во время итерации.
-     *
-     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
+     * Главный метод такта игры, координирующий логику обновления менеджеров.
      */
     public void update(float deltaTime) {
-        waveManager.update(deltaTime, enemies);
+        // Спавним новые волны врагов напрямую в список EntityManager
+        waveManager.update(deltaTime, entityManager.getEnemies());
 
-        for (int i = enemies.size - 1; i >= 0; i--) {
-            Enemy enemy = enemies.get(i);
-            enemy.update(deltaTime, currencyManager);
-
-            if (!enemy.isActive()) {
-                enemies.removeIndex(i);
-            }
-        }
-
-        projectilesToSpawn.clear();
-        for (Tower tower : towers) {
-            tower.update(deltaTime, enemies, projectilesToSpawn);
-        }
-
-        projectiles.addAll(projectilesToSpawn);
-
-        for (int i = projectiles.size - 1; i >= 0; i--) {
-            Projectile projectile = projectiles.get(i);
-            projectile.update(deltaTime, currencyManager);
-
-            if (!projectile.isActive()) {
-                projectiles.removeIndex(i);
-            }
-        }
+        // Запускаем такт логики для всех живых сущностей
+        entityManager.updateEntities(deltaTime, currencyManager);
     }
 
-    /**
-     * Регистрирует новую построенную башню в списках игрового мира.
-     *
-     * @param tower созданный экземпляр оборонительной башни
-     */
     public void addTower(Tower tower) {
-        towers.add(tower);
+        entityManager.addTower(tower);
     }
 
-    /**
-     * @return динамический список всех живых врагов, находящихся на карте
-     */
-    public Array<Enemy> getEnemies() { return enemies; }
+    // Пробрасываем геттеры сущностей наружу для рендереров
+    public Array<Enemy> getEnemies() { return entityManager.getEnemies(); }
+    public Array<Tower> getTowers() { return entityManager.getTowers(); }
+    public Array<Projectile> getProjectiles() { return entityManager.getProjectiles(); }
 
-    /**
-     * @return список всех возведенных игроком башен
-     */
-    public Array<Tower> getTowers() { return towers; }
-
-    /**
-     * @return список летящих к целям снарядов
-     */
-    public Array<Projectile> getProjectiles() { return projectiles; }
-
-    /**
-     * @return текущий настроенный маршрут движения для врагов
-     */
+    // Геттеры сервисов
     public RoadPath getRoadPath() { return roadPath; }
-
-    /**
-     * @return ссылку на активный менеджер волн наступающих мобов
-     */
     public WaveManager getWaveManager() { return waveManager; }
-
-    /**
-     * @return ссылку на менеджер экономики и внутриигрового баланса игрока
-     */
     public CurrencyManager getCurrencyManager() { return currencyManager; }
-
-    /**
-     * @return логическую двумерную сетку типов клеток текущей карты
-     */
     public GameGrid getGameGrid() { return gameGrid; }
-
-    /**
-     * @return ссылку на сервис управления динамическим магазином башен
-     */
     public ShopService getShopService() { return shopService; }
 }
