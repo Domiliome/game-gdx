@@ -13,6 +13,9 @@ public class Enemy extends Entity {
     private final float speed;
     private boolean active = true;
     private final MovementBehavior movementBehavior;
+    private float slowFactor = 1.0f;
+    private float slowTimer = 0f;
+
 
     /**
      * Создает нового врага с заданными характеристиками.
@@ -41,6 +44,15 @@ public class Enemy extends Entity {
     public void update(float deltaTime, CurrencyManager economy) {
         if (!active) return;
 
+        // Отсчитываем время действия замедления
+        if (slowTimer > 0) {
+            slowTimer -= deltaTime;
+            if (slowTimer <= 0) {
+                slowFactor = 1.0f; // Время вышло — возвращаем нормальную скорость
+                System.out.println("Эффект замедления с врага спал.");
+            }
+        }
+
         if (movementBehavior != null) {
             movementBehavior.move(this, deltaTime);
         }
@@ -49,6 +61,7 @@ public class Enemy extends Entity {
             economy.decreaseLives(1);
         }
     }
+
 
     /**
      * Базовый метод обновления без параметров.
@@ -71,9 +84,11 @@ public class Enemy extends Entity {
     }
 
     /**
-     * @return базовая скорость перемещения врага
+     * @return скорость перемещения врага с учетом наложенных дебаффов
      */
-    public float getSpeed() { return speed; }
+    public float getSpeed() {
+        return speed * slowFactor;
+    }
 
     /**
      * @return текущее количество здоровья врага
@@ -100,5 +115,16 @@ public class Enemy extends Entity {
             this.active = false;
             economy.addGold(20);
         }
+    }
+        /**
+     * Накладывает на врага эффект замедления.
+     *
+     * @param factor   коэффициент скорости (например, 0.5f уменьшит скорость на 50%)
+     * @param duration длительность эффекта в секундах
+     */
+    public void applySlow(float factor, float duration) {
+        this.slowFactor = factor;
+        this.slowTimer = duration;
+        System.out.println("Враг замедлен на " + (100 - (factor * 100)) + "% на " + duration + " сек!");
     }
 }

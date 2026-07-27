@@ -10,10 +10,10 @@ import io.github.simple_game.core.service.CurrencyManager;
  * направление к своей цели и преследует её до момента столкновения или деактивации.
  */
 public class Projectile extends Entity {
-    private final Enemy target;
-    private final float damage;
-    private final float speed;
-    private boolean active = true;
+    protected final Enemy target;
+    protected final float damage;
+    protected final float speed;
+    protected boolean active = true;
 
     /**
      * Создает новый снаряд в заданных координатах, направленный на конкретного врага.
@@ -94,7 +94,7 @@ public class Projectile extends Entity {
      *
      * @param economy ссылка на менеджер экономики для зачисления золота при убийстве цели
      */
-    private void hitTarget(CurrencyManager economy) {
+    protected void hitTarget(CurrencyManager economy) {
         active = false;
         target.takeDamage(damage, economy);
     }

@@ -5,11 +5,15 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
+import io.github.simple_game.core.model.entity.ArcherTower;
+import io.github.simple_game.core.model.entity.CannonTower;
+import io.github.simple_game.core.model.entity.MagicTower;
 import io.github.simple_game.core.model.entity.Tower;
 import io.github.simple_game.core.model.entity.TowerType;
 
 /**
  * Менеджер, управляющий логикой перетаскивания башен из магазина на карту (Drag and Drop).
+ * Динамически создает временный фантомный объект башни для точного отображения радиуса атаки.
  */
 public class DragAndDropManager {
     private final GameLoop gameLoop;
@@ -17,12 +21,19 @@ public class DragAndDropManager {
     private final Vector3 screenTouch = new Vector3();
 
     private TowerType draggingType = null;
+    private Tower previewTower = null;
     private boolean isDragging = false;
     private float currentX = 0f;
     private float currentY = 0f;
 
     private static final int CELL_SIZE = 64;
 
+    /**
+     * Создает новый менеджер Drag-and-Drop.
+     *
+     * @param gameLoop актуальная ссылка на игровой цикл
+     * @param camera   ортографическая камера игрового мира
+     */
     public DragAndDropManager(GameLoop gameLoop, OrthographicCamera camera) {
         this.gameLoop = gameLoop;
         this.camera = camera;
@@ -30,47 +41,74 @@ public class DragAndDropManager {
 
     /**
      * Вызывается, когда игрок зажал палец на иконке башни в магазине.
+     * Инициализирует виртуальный фантомный объект башни для динамического считывания параметров.
+     *
+     * @param type    выбранный тип башни для строительства
+     * @param screenX начальная координата X нажатия на экране
+     * @param screenY начальная координата Y нажатия на экране
      */
     public void startDrag(TowerType type, float screenX, float screenY) {
         this.draggingType = type;
         this.isDragging = true;
+
+        // Создаем временный экземпляр башни для чтения радиуса атаки из её класса
+        this.previewTower = switch (type) {
+            case ARCHER -> new ArcherTower(0, 0, gameLoop);
+            case CANNON -> new CannonTower(0, 0, gameLoop);
+            case MAGIC  -> new MagicTower(0, 0, gameLoop);
+        };
+
         updatePosition(screenX, screenY);
     }
 
     /**
      * Вызывается каждый кадр, пока палец движется по экрану.
+     * Переводит экранные координаты скроллинга в мировые координаты.
+     *
+     * @param screenX текущая координата X пальца на экране
+     * @param screenY текущая координата Y пальца на экране
      */
     public void updatePosition(float screenX, float screenY) {
         if (!isDragging) return;
         screenTouch.set(screenX, screenY, 0);
-        camera.unproject(screenTouch); // Переводим координаты пальца в координаты игрового мира
+        camera.unproject(screenTouch);
         this.currentX = screenTouch.x;
         this.currentY = screenTouch.y;
     }
 
     /**
-     * Вызывается, когда игрок отпускает палец.
+     * Завершает процесс перетаскивания башни, выравнивает финальные координаты по сетке 64x64,
+     * проверяет доступность ячейки и финансовый баланс игрока.
+     * В случае успеха инициализирует конкретный специализированный подкласс башни на карте.
      */
     public void stopDragAndPlace() {
         if (!isDragging) return;
         isDragging = false;
 
-        // Выравниваем финальную точку по сетке
         float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + 32f;
         float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + 32f;
 
         CurrencyManager economy = gameLoop.getCurrencyManager();
 
-        // Проверяем, можно ли построить башню в этой клетке
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
             if (economy.spendGold(draggingType.getCost())) {
-                gameLoop.addTower(new Tower(snappedX, snappedY, draggingType));
-                System.out.println("Башня установлена через Drag-and-Drop!");
+                Tower towerToPlace = switch (draggingType) {
+                    case ARCHER -> new ArcherTower(snappedX, snappedY, gameLoop);
+                    case CANNON -> new CannonTower(snappedX, snappedY, gameLoop);
+                    case MAGIC  -> new MagicTower(snappedX, snappedY, gameLoop);
+                };
+
+                gameLoop.addTower(towerToPlace);
+                System.out.println("Успешно возведена специализированная башня: " + draggingType);
             }
         }
         draggingType = null;
+        previewTower = null; // Очищаем фантомный объект для сборщика мусора
     }
 
+    /**
+     * Проверяет, не занята ли уже целевая клетка 64x64 другой башней.
+     */
     private boolean isCellFree(float x, float y) {
         for (Tower tower : gameLoop.getTowers()) {
             if (tower.getPosition().dst(x, y) < CELL_SIZE) return false;
@@ -79,30 +117,31 @@ public class DragAndDropManager {
     }
 
     /**
-     * Отрисовывает полупрозрачный фантом башни под пальцем и подсвечивает целевую клетку.
+     * Отрисовывает полупрозрачный фантом ячейки под пальцем и подсвечивает целевую клетку.
+     * Запрашивает точный радиус атаки напрямую у фантомного объекта башни без хардкода.
+     *
+     * @param shapeRenderer инструмент отрисовки геометрических примитивов
      */
     public void drawPreview(ShapeRenderer shapeRenderer) {
-        if (!isDragging || draggingType == null) return;
+        if (!isDragging || draggingType == null || previewTower == null) return;
 
         float snappedX = ((int) currentX / CELL_SIZE) * CELL_SIZE + 32f;
         float snappedY = ((int) currentY / CELL_SIZE) * CELL_SIZE + 32f;
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        // Если строить можно — подсвечиваем клетку зеленым, если нельзя (дорога/занято) — красным
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
             shapeRenderer.setColor(new Color(0, 1, 0, 0.4f));
         } else {
             shapeRenderer.setColor(new Color(1, 0, 0, 0.4f));
         }
 
-        // Рисуем квадрат ячейки под сетку
         shapeRenderer.rect(snappedX - 32, snappedY - 32, CELL_SIZE, CELL_SIZE);
         shapeRenderer.end();
 
-        // Рисуем радиус атаки будущей башни
+        // Спрашиваем радиус атаки напрямую у изолированного класса башни
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(new Color(1, 1, 1, 0.3f));
-        shapeRenderer.circle(snappedX, snappedY, draggingType.getBaseRange());
+        shapeRenderer.circle(snappedX, snappedY, previewTower.getAttackRange());
         shapeRenderer.end();
     }
 
