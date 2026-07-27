@@ -1,9 +1,9 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import io.github.simple_game.core.model.entity.tower.ArcherTower;
 import io.github.simple_game.core.model.entity.tower.CannonTower;
@@ -18,7 +18,7 @@ import io.github.simple_game.core.model.entity.tower.TowerType;
  */
 public class DragAndDropManager {
     private final GameLoop gameLoop;
-    private final OrthographicCamera camera;
+    private final Viewport worldViewport;
     private final Vector3 screenTouch = new Vector3();
 
     private TowerType draggingType = null;
@@ -35,11 +35,11 @@ public class DragAndDropManager {
      * @param gameLoop актуальная ссылка на игровой цикл
      * @param camera   ортографическая камера игрового мира
      */
-    public DragAndDropManager(GameLoop gameLoop, OrthographicCamera camera) {
+    public DragAndDropManager(GameLoop gameLoop, Viewport worldViewport) {
         this.gameLoop = gameLoop;
-        this.camera = camera;
-    }
+        this.worldViewport = worldViewport;
 
+    }
     /**
      * Вызывается, когда игрок зажал палец на иконке башни в магазине.
      * Инициализирует виртуальный фантомный объект башни для динамического считывания параметров.
@@ -72,7 +72,7 @@ public class DragAndDropManager {
     public void updatePosition(float screenX, float screenY) {
         if (!isDragging) return;
         screenTouch.set(screenX, screenY, 0);
-        camera.unproject(screenTouch);
+        worldViewport.unproject(screenTouch);
         this.currentX = screenTouch.x;
         this.currentY = screenTouch.y;
     }

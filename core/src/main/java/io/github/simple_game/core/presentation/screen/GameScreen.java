@@ -1,24 +1,25 @@
 package io.github.simple_game.core.presentation.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.input.GestureDetector;
+
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
 
-/**
- * Класс игрового экрана, управляющий жизненным циклом и адаптивным рендерингом основного игрового процесса.
- * Связывает воедино центральную логику обновления мира ({@link GameLoop}) и систему адаптивного
- * масштабирования ({@link Viewport}) под любые экраны смартфонов.
- */
 public class GameScreen extends ScreenAdapter {
-    private OrthographicCamera camera;
-    private Viewport viewport; // Добавляем адаптивный слой масштабирования
+    private OrthographicCamera worldCamera;
+    private Viewport worldViewport;
+    private OrthographicCamera uiCamera;
+    private Viewport uiViewport;
 
     private GameLoop gameLoop;
     private GameRenderer gameRenderer;
@@ -27,21 +28,33 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        camera = new OrthographicCamera();
-
-        // Инициализируем FitViewport с фиксированным виртуальным пиксельным разрешением 480x800
-        viewport = new FitViewport(480, 800, camera);
-        viewport.apply(true); // Применяем настройки и центрируем камеру в мире
+        worldCamera = new OrthographicCamera();
+        worldViewport = new FitViewport(480, 800, worldCamera);
+        uiCamera = new OrthographicCamera();
+        uiViewport = new ScreenViewport(uiCamera);
 
         gameLoop = new GameLoop();
-        interactionService = new InteractionService(gameLoop, camera);
+        interactionService = new InteractionService(gameLoop, worldViewport);
+        gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
-        // Передаем viewport в рендерер и интерфейс, чтобы они знали актуальные размеры
-        gameRenderer = new GameRenderer(gameLoop, camera, interactionService);
-        gameInterface = new GameInterface(gameLoop, camera);
+        // Исправлено: передаем все 4 необходимые зависимости для модульного Scene2D
+        gameInterface = new GameInterface(
+            gameLoop,
+            uiViewport,
+            gameRenderer,
+            interactionService.getDragAndDropManager()
+        );
 
-        com.badlogic.gdx.input.GestureDetector gestureDetector = new com.badlogic.gdx.input.GestureDetector(interactionService);
-        Gdx.input.setInputProcessor(gestureDetector);
+        initInputProcessing();
+    }
+
+    private void initInputProcessing() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        // Первым делом клики и свайпы забирает Scene2D интерфейс (ShopPanel)
+        multiplexer.addProcessor(gameInterface.getStage());
+        // Вторым делом — жесты камеры и тапы по сетке игрового мира
+        multiplexer.addProcessor(new GestureDetector(interactionService));
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     @Override
@@ -50,27 +63,25 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         gameLoop.update(delta);
-
         if (interactionService != null) {
             interactionService.updateInertia(delta);
         }
 
-        camera.update();
-
-        // Сначала рисуем карту, башни и врагов
+        // РЕНДЕР СЛОЯ 1: Игровой мир
+        worldViewport.apply();
+        worldCamera.update();
         gameRenderer.render();
 
-        // Поверх игрового мира рисуем текст интерфейса
+        // РЕНДЕР СЛОЯ 2: Интерфейс (UI)
+        uiViewport.apply();
+        uiCamera.update();
         gameInterface.render();
     }
 
-    /**
-     * Важнейший метод для мобильной адаптивности.
-     * Передает новые физические размеры экрана в Viewport для пересчета пропорций без искажений пикселей.
-     */
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true); // true принудительно центрирует камеру после изменения размеров
+        worldViewport.update(width, height, true);
+        uiViewport.update(width, height, true);
     }
 
     @Override

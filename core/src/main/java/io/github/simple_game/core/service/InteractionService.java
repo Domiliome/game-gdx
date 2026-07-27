@@ -2,25 +2,25 @@ package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.Viewport; // Обязательный новый импорт
 
 import io.github.simple_game.core.model.entity.tower.Tower;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 
 /**
  * Сервис обработки пользовательского ввода и сложных жестов взаимодействия с игровым миром.
- * Поддерживает жесты Pinch-to-Zoom, Pan (перетаскивание) и Drag-and-Drop башен из магазина.
+ * Адаптирован под работу с Viewport для точного пересчета координат на любых экранах.
  */
 public class InteractionService implements GestureDetector.GestureListener {
     private final GameLoop gameLoop;
+    private final Viewport worldViewport; // Храним вьюпорт вместо чистой камеры
     private final OrthographicCamera camera;
 
-
     private final Vector3 touchPoint = new Vector3();
-
     private static final int CELL_SIZE = 64;
-
 
     private float initialZoom = 1.0f;
     private final float minZoom = 0.5f;
@@ -32,33 +32,34 @@ public class InteractionService implements GestureDetector.GestureListener {
 
     private final DragAndDropManager dragAndDropManager;
 
-
     /**
      * Создает новый сервис взаимодействия и жестов.
      *
-     * @param gameLoop актуальная ссылка на игровой цикл
-     * @param camera   ортографическая камера игрового мира
+     * @param gameLoop       актуальная ссылка на игровой цикл
+     * @param worldViewport  вьюпорт игрового мира для адаптивного пересчета координат
      */
-    public InteractionService(GameLoop gameLoop, OrthographicCamera camera) {
+    public InteractionService(GameLoop gameLoop, Viewport worldViewport) {
         this.gameLoop = gameLoop;
-        this.camera = camera;
-        this.dragAndDropManager = new DragAndDropManager(gameLoop, camera);
+        this.worldViewport = worldViewport;
+        // Извлекаем камеру из вьюпорта, сохраняя управление ее позицией и зумом
+        this.camera = (OrthographicCamera) worldViewport.getCamera();
+        // Передаем вьюпорт дальше в менеджер перетаскивания
+        this.dragAndDropManager = new DragAndDropManager(gameLoop, worldViewport);
     }
 
     /**
      * Ловим момент первого прикосновения к экрану.
-     * Проверяет, попал ли палец на плашку магазина для старта перетаскивания.
      */
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
         touchPoint.set(x, y, 0);
-        camera.unproject(touchPoint);
+        // Исправлено: unproject через вьюпорт учитывает черные полосы и масштабирование
+        worldViewport.unproject(touchPoint);
 
         // Спрашиваем у магазина, выбрали ли мы какую-то башню по этим координатам
         TowerType typeToDrag = gameLoop.getShopService().getSelectedTowerType(touchPoint.x, touchPoint.y);
 
         if (typeToDrag != null) {
-            // Если выбрали — запускаем Drag-and-Drop
             dragAndDropManager.startDrag(typeToDrag, x, y);
             return true;
         }
@@ -67,19 +68,18 @@ public class InteractionService implements GestureDetector.GestureListener {
         return false;
     }
 
-
     /**
      * Срабатывает при одиночном коротком тапе по экрану.
-     * Используется для улучшения существующих башен.
      */
     @Override
     public boolean tap(float x, float y, int count, int button) {
         touchPoint.set(x, y, 0);
-        camera.unproject(touchPoint);
+        // Исправлено: unproject через вьюпорт
+        worldViewport.unproject(touchPoint);
 
-        float snappedX = ((int) touchPoint.x / CELL_SIZE) * CELL_SIZE + 32f;
-        float snappedY = ((int) touchPoint.y / CELL_SIZE) * CELL_SIZE + 32f;
-
+        // Исправлено: MathUtils.floor безопаснее обычного приведения к (int) на границах экрана
+        float snappedX = MathUtils.floor(touchPoint.x / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedY = MathUtils.floor(touchPoint.y / CELL_SIZE) * CELL_SIZE + 32f;
 
         CurrencyManager economy = gameLoop.getCurrencyManager();
         for (Tower tower : gameLoop.getTowers()) {
@@ -96,7 +96,6 @@ public class InteractionService implements GestureDetector.GestureListener {
 
     /**
      * Срабатывает при движении пальца.
-     * Либо тащит башенку из магазина, либо перемещает саму карту.
      */
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
