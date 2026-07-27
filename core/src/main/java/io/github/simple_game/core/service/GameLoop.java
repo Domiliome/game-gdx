@@ -1,7 +1,6 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
-
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
@@ -18,10 +17,12 @@ public class GameLoop {
     private final CurrencyManager currencyManager;
     private final GameGrid gameGrid;
     private final ShopService shopService;
-    private RoadPath roadPath;
+    private final RoadPath roadPath; // Сделали final
 
     public GameLoop() {
-        initLevelPath();
+        // Создаем пустой маршрут. Точки в него запишет GameScreen.resize() динамически
+        this.roadPath = new RoadPath();
+
         this.entityManager = new EntityManager();
         this.waveManager = new WaveManager(roadPath);
         this.currencyManager = new CurrencyManager(250, 20);
@@ -29,24 +30,11 @@ public class GameLoop {
         this.shopService = new ShopService();
     }
 
-    private void initLevelPath() {
-        roadPath = new RoadPath();
-        roadPath.addPoint(240, 800);
-        roadPath.addPoint(240, 500);
-        roadPath.addPoint(64, 500);
-        roadPath.addPoint(64, 200);
-        roadPath.addPoint(416, 200);
-        roadPath.addPoint(416, 0);
-    }
-
     /**
      * Главный метод такта игры, координирующий логику обновления менеджеров.
      */
     public void update(float deltaTime) {
-        // Спавним новые волны врагов напрямую в список EntityManager
         waveManager.update(deltaTime, entityManager.getEnemies());
-
-        // Запускаем такт логики для всех живых сущностей
         entityManager.updateEntities(deltaTime, currencyManager);
     }
 

@@ -3,15 +3,11 @@ package io.github.simple_game.core.presentation.view.renderer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import io.github.simple_game.core.model.entity.tower.Tower;
-import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 
 public class DebugGridRenderer {
-    private final GameLoop gameLoop;
 
     public DebugGridRenderer(GameLoop gameLoop) {
-        this.gameLoop = gameLoop;
     }
 
         public void render(ShapeRenderer shapeRenderer, float worldHeight) { // Добавляем worldHeight

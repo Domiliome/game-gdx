@@ -45,4 +45,7 @@ public class RoadPath {
     public int getPointCount() {
         return points.size;
     }
+    public void clear() {
+        this.points.clear();
+    }
 }

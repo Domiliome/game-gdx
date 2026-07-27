@@ -15,6 +15,7 @@ import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
+import io.github.simple_game.core.model.movement.RoadPath;
 
 public class GameScreen extends ScreenAdapter {
     private OrthographicCamera worldCamera;
@@ -76,19 +77,35 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void resize(int width, int height) {
-        // Изменяем параметр центрирования на false, чтобы привязать (0,0) мира к углу экрана
         worldViewport.update(width, height, false);
 
-        // Вручную центрируем камеру строго по фактическим динамическим границам ExtendViewport
-        worldCamera.position.set(
-            worldViewport.getWorldWidth() / 2f,
-            worldViewport.getWorldHeight() / 2f,
-            0
-        );
-        worldCamera.update(); // Принудительно обновляем матрицы камеры после изменения позиции
+        float worldW = worldViewport.getWorldWidth();
+        float worldH = worldViewport.getWorldHeight();
 
-        // Для UI оставляем стандартное обновление (ScreenViewport центрируется правильно сам)
+        worldCamera.position.set(worldW / 2f, worldH / 2f, 0);
+        worldCamera.update();
+
+        // Динамически перестраиваем путь под физический размер Android экрана
+        rebuildDynamicPath(worldH);
+
         uiViewport.update(width, height, true);
+    }
+
+    private void rebuildDynamicPath(float worldHeight) {
+        RoadPath path = gameLoop.getRoadPath();
+
+        // Пересоздаем точки пути (если у вас в RoadPath есть метод clear, можно вызвать его)
+        // Для безопасности, если метода clear нет, мы просто заново инициализируем точки,
+        // предполагая, что ваш RoadPath позволяет обновить или очистить коллекцию.
+        path.clear();
+
+        // Спавним врагов за пределами верхней видимой границы экрана (worldHeight + 50 пикселей)
+        path.addPoint(240, worldHeight + 50f);
+        path.addPoint(240, 500);
+        path.addPoint(64, 500);
+        path.addPoint(64, 200);
+        path.addPoint(416, 200);
+        path.addPoint(416, -50f); // Уводим финал под нижнюю черную зону/панель
     }
 
     @Override

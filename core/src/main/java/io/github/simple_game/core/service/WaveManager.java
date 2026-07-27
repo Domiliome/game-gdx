@@ -23,6 +23,7 @@ public class WaveManager {
         this.roadPath = roadPath;
     }
 
+    // Измените метод update() в WaveManager.java:
     public void update(float deltaTime, Array<Enemy> enemies) {
         if (isWaveActive) {
             handleSpawning(deltaTime, enemies);
@@ -32,21 +33,20 @@ public class WaveManager {
                 waveTimer = 0f;
                 System.out.println("Wave " + currentWaveNumber + " cleared!");
             }
-        } else {
-            waveTimer += deltaTime;
-            if (waveTimer >= timeBetweenWaves) {
-                startNextWave();
-            }
         }
+        // УДАЛЕНО: автоматический отсчет и вызов startNextWave() по таймеру
     }
 
-    private void startNextWave() {
+    // Делаем метод публичным, чтобы интерфейс мог вызвать его при клике:
+    public void startNextWave() {
+        if (isWaveActive) return; // Защита: нельзя запустить волну, пока идет бой
         currentWaveNumber++;
         isWaveActive = true;
         enemiesLeftToSpawn = 4 + currentWaveNumber * 2;
         spawnTimer = 0f;
         System.out.println("Start wave " + currentWaveNumber + "! Enemy: " + enemiesLeftToSpawn);
     }
+
 
     private void handleSpawning(float deltaTime, Array<Enemy> enemies) {
         if (enemiesLeftToSpawn <= 0) return;
