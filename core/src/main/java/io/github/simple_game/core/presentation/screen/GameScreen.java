@@ -5,17 +5,16 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.input.GestureDetector;
 
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
-import io.github.simple_game.core.model.movement.RoadPath;
 
 public class GameScreen extends ScreenAdapter {
     private OrthographicCamera worldCamera;
@@ -85,27 +84,27 @@ public class GameScreen extends ScreenAdapter {
         worldCamera.position.set(worldW / 2f, worldH / 2f, 0);
         worldCamera.update();
 
-        // Динамически перестраиваем путь под физический размер Android экрана
         rebuildDynamicPath(worldH);
 
         uiViewport.update(width, height, true);
     }
 
+    /**
+     * ИСПРАВЛЕНО: Генерирует ровно 6 ключевых точек вейпоинтов для плавного бега врагов.
+     * Координаты подогнаны строго под шаг сетки 32 с центровкой в +16 пикселей.
+     */
     private void rebuildDynamicPath(float worldHeight) {
-        RoadPath path = gameLoop.getRoadPath();
-
-        // Пересоздаем точки пути (если у вас в RoadPath есть метод clear, можно вызвать его)
-        // Для безопасности, если метода clear нет, мы просто заново инициализируем точки,
-        // предполагая, что ваш RoadPath позволяет обновить или очистить коллекцию.
+        io.github.simple_game.core.model.movement.RoadPath path = gameLoop.getRoadPath();
         path.clear();
 
-        // Спавним врагов за пределами верхней видимой границы экрана (worldHeight + 50 пикселей)
-        path.addPoint(240, worldHeight + 50f);
-        path.addPoint(240, 500);
-        path.addPoint(64, 500);
-        path.addPoint(64, 200);
-        path.addPoint(416, 200);
-        path.addPoint(416, -50f); // Уводим финал под нижнюю черную зону/панель
+        float startY = com.badlogic.gdx.math.MathUtils.floor((worldHeight + 32f) / 32f) * 32f + 16f;
+
+        path.addPoint(240f, startY);
+        path.addPoint(240f, 528f);
+        path.addPoint(48f, 528f);
+        path.addPoint(48f, 176f);
+        path.addPoint(432f, 176f);
+        path.addPoint(432f, -48f);
     }
 
     @Override

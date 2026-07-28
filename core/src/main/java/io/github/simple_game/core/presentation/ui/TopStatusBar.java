@@ -1,5 +1,7 @@
 package io.github.simple_game.core.presentation.ui;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+
 import io.github.simple_game.core.service.CurrencyManager;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.WaveManager;
@@ -23,46 +26,47 @@ public class TopStatusBar extends Table {
     public TopStatusBar(GameLoop gameLoop) {
         this.gameLoop = gameLoop;
 
+        // Если запущено на Android/iOS -> масштаб 2.0x. Если на Desktop -> масштаб 1.0x.
+        float scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
+
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
-        labelStyle.font.getData().setScale(1.5f);
+        labelStyle.font.getData().setScale(1.5f * scale); // 1.5f для ПК, 3.0f для телефона
 
         waveLabel = new Label("", labelStyle);
         statusLabel = new Label("", labelStyle);
         economyLabel = new Label("", labelStyle);
 
-        // 1. Генерация программной текстуры для фона кнопки
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0.2f, 0.6f, 0.2f, 1f)); // Зеленая кнопка
+        pixmap.setColor(new Color(0.2f, 0.6f, 0.2f, 1f));
         pixmap.fill();
         this.btnBg = new Texture(pixmap);
         pixmap.dispose();
 
-        // 2. Создание стиля кнопки без использования внешних skins JSON
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
         btnStyle.font = new BitmapFont();
-        btnStyle.font.getData().setScale(1.4f);
+        btnStyle.font.getData().setScale(1.4f * scale); // 1.4f для ПК, 2.8f для телефона
         btnStyle.fontColor = Color.WHITE;
-        btnStyle.up = new TextureRegionDrawable(btnBg); // Фон кнопки в обычном состоянии
+        btnStyle.up = new TextureRegionDrawable(btnBg);
 
-        startButton = new TextButton(" START WAVE ", btnStyle);
+        startButton = new TextButton(" START ", btnStyle);
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Вызываем запуск следующей волны в нашем менеджере
                 gameLoop.getWaveManager().startNextWave();
             }
         });
 
-        // 3. Верстка: Текст собирается в левую мини-таблицу, кнопка идет справа от него
         Table textTable = new Table();
         textTable.left();
-        textTable.add(waveLabel).left().padBottom(5).row();
-        textTable.add(statusLabel).left().padBottom(5).row();
+        textTable.add(waveLabel).left().padBottom(5 * scale).row();
+        textTable.add(statusLabel).left().padBottom(5 * scale).row();
         textTable.add(economyLabel).left();
 
         this.left().top();
         this.add(textTable).expandX().left();
-        this.add(startButton).right().size(160, 60).padRight(20); // Кнопка прижата к правому краю
+
+        // Размеры кнопки динамически перемножаются (160x60 для ПК, 320x120 для телефона)
+        this.add(startButton).right().size(160 * scale, 60 * scale).padRight(20 * scale);
     }
 
     @Override
@@ -75,15 +79,18 @@ public class TopStatusBar extends Table {
         economyLabel.setText("Gold: " + economy.getGold() + "  |  Lives: " + economy.getLives());
         economyLabel.setColor(Color.GREEN);
 
-        // Управляем доступностью кнопки и текстом в реальном времени
         if (waveManager.isWaveActive()) {
             statusLabel.setText("Status: Battle!");
             statusLabel.setColor(Color.RED);
-            startButton.setVisible(false); // Прячем кнопку во время активного боя
+            startButton.setVisible(false);
         } else {
             statusLabel.setText("Next wave: Ready");
             statusLabel.setColor(Color.GOLD);
-            startButton.setVisible(true);  // Показываем кнопку в фазе отдыха
+            startButton.setVisible(true);
         }
+    }
+
+    public void dispose() {
+        if (btnBg != null) btnBg.dispose();
     }
 }

@@ -40,33 +40,39 @@ public class GameRenderer {
         this.healthBarRenderer = new HealthBarRenderer(gameLoop);
     }
 
-        public void render() {
-            batch.setProjectionMatrix(camera.combined);
-            shapeRenderer.setProjectionMatrix(camera.combined);
+            public void render() {
+        batch.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
-            // Получаем текущую динамическую высоту расширенного игрового мира
-            float currentWorldHeight = camera.viewportHeight;
+        // Получаем текущую динамическую высоту расширенного игрового мира
+        float currentWorldHeight = camera.viewportHeight;
 
-            // 1. Отрисовка спрайтов (передаем высоту)
-            batch.begin();
-            worldSpriteRenderer.render(batch, currentWorldHeight);
-            batch.end();
+        // Определяем, перетаскивает ли игрок башню прямо сейчас
+        boolean isDraggingActive = interactionService != null &&
+                                   interactionService.getDragAndDropManager().isDragging();
 
-            // 2. Отрисовка линий и сетки (передаем высоту)
-            debugGridRenderer.render(shapeRenderer, currentWorldHeight);
-            entityRenderer.render(shapeRenderer);
+        // 1. Отрисовка спрайтов (карта, башни)
+        batch.begin();
+        worldSpriteRenderer.render(batch, currentWorldHeight);
+        batch.end();
 
-            // 3. Отрисовка элементов с прозрачностью (полоски здоровья)
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            healthBarRenderer.render(shapeRenderer);
+        // 2. Отрисовка линий и сетки (теперь передаем флаг перетаскивания)
+        debugGridRenderer.render(shapeRenderer, currentWorldHeight, isDraggingActive);
+        entityRenderer.render(shapeRenderer);
 
-            if (interactionService != null && interactionService.getDragAndDropManager().isDragging()) {
-                interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
-                renderGhostPhantom();
-            }
-            Gdx.gl.glDisable(GL20.GL_BLEND);
+        // 3. Отрисовка элементов с прозрачностью (полоски здоровья)
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        healthBarRenderer.render(shapeRenderer, batch);
+
+
+        if (isDraggingActive) {
+            interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
+            renderGhostPhantom();
+        }
+        Gdx.gl.glDisable(GL20.GL_BLEND);
     }
+
 
 
 

@@ -1,5 +1,6 @@
 package io.github.simple_game.core.presentation.ui;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -14,23 +15,22 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.presentation.view.GameRenderer;
-import io.github.simple_game.core.service.CurrencyManager;
 import io.github.simple_game.core.service.DragAndDropManager;
 import io.github.simple_game.core.service.GameLoop;
 
 public class ShopPanel extends Table {
     private final GameLoop gameLoop;
     private final DragAndDropManager dragManager;
-    private final Texture backgroundTexture; // Исправлено: добавили final
-
-    // Храним ссылки на ценники, чтобы перекрашивать их в реальном времени
-    private final Label priceLabel1;
-    private final Label priceLabel2;
-    private final Label priceLabel3;
+    private final Texture backgroundTexture;
+    private final Label priceLabel1, priceLabel2, priceLabel3;
+    private final float scale;
 
     public ShopPanel(GameLoop gameLoop, GameRenderer renderer, DragAndDropManager dragManager) {
         this.gameLoop = gameLoop;
         this.dragManager = dragManager;
+
+        // Определяем платформу (2.0f для Android, 1.0f для десктопа)
+        this.scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(new Color(0.12f, 0.12f, 0.12f, 1f));
@@ -39,25 +39,28 @@ public class ShopPanel extends Table {
         pixmap.dispose();
         this.setBackground(new TextureRegionDrawable(backgroundTexture));
 
-        priceLabel1 = new Label("100G", new Label.LabelStyle(new BitmapFont(), Color.GOLD));
-        priceLabel2 = new Label("250G", new Label.LabelStyle(new BitmapFont(), Color.GOLD));
-        priceLabel3 = new Label("200G", new Label.LabelStyle(new BitmapFont(), Color.GOLD));
+        Label.LabelStyle priceStyle = new Label.LabelStyle(new BitmapFont(), Color.GOLD);
+        priceLabel1 = new Label("100G", priceStyle);
+        priceLabel2 = new Label("250G", priceStyle);
+        priceLabel3 = new Label("200G", priceStyle);
 
         Table slot1 = createShopSlot(new Image(renderer.getArcherTowerTexture()), priceLabel1, TowerType.ARCHER);
         Table slot2 = createShopSlot(new Image(renderer.getCannonTowerTexture()), priceLabel2, TowerType.CANNON);
         Table slot3 = createShopSlot(new Image(renderer.getMagicTowerTexture()),  priceLabel3, TowerType.MAGIC);
 
         this.bottom().center();
-        this.add(slot1).expandX().fillY().padTop(10).padBottom(15);
-        this.add(slot2).expandX().fillY().padTop(10).padBottom(15);
-        this.add(slot3).expandX().fillY().padTop(10).padBottom(15);
+        // Адаптивные отступы (10/15 пикселей для ПК, 20/30 для Android)
+        this.add(slot1).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
+        this.add(slot2).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
+        this.add(slot3).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
     }
 
     private Table createShopSlot(Image towerImage, Label priceLabel, final TowerType towerType) {
         Table slotTable = new Table();
-        priceLabel.getStyle().font.getData().setScale(1.2f);
+        priceLabel.getStyle().font.getData().setScale(1.2f * scale); // 1.2f на ПК, 2.4f на телефоне
 
-        slotTable.add(towerImage).size(64, 64).padBottom(5);
+        // Адаптивный размер иконок (64x64 на ПК, 128x128 на Android)
+        slotTable.add(towerImage).size(64 * scale, 64 * scale).padBottom(5 * scale);
         slotTable.row();
         slotTable.add(priceLabel);
 
@@ -90,17 +93,10 @@ public class ShopPanel extends Table {
         return slotTable;
     }
 
-    /**
-     * Исправлено: Методact() вызывается сценой Scene2D автоматически каждый кадр.
-     * Здесь мы ОПРАШИВАЕМ gameLoop, убирая предупреждение и добавляя динамику цен!
-     */
     @Override
     public void act(float delta) {
         super.act(delta);
-        CurrencyManager economy = gameLoop.getCurrencyManager();
-        int currentGold = economy.getGold();
-
-        // Перекрашиваем цену в КРАСНЫЙ, если не хватает денег, и в ЗОЛОТОЙ, если хватает
+        int currentGold = gameLoop.getCurrencyManager().getGold();
         priceLabel1.setColor(currentGold >= TowerType.ARCHER.getCost() ? Color.GOLD : Color.RED);
         priceLabel2.setColor(currentGold >= TowerType.CANNON.getCost() ? Color.GOLD : Color.RED);
         priceLabel3.setColor(currentGold >= TowerType.MAGIC.getCost()  ? Color.GOLD : Color.RED);

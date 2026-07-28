@@ -1,6 +1,7 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
+
 import io.github.simple_game.core.model.entity.Enemy;
 import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
@@ -17,12 +18,13 @@ public class GameLoop {
     private final CurrencyManager currencyManager;
     private final GameGrid gameGrid;
     private final ShopService shopService;
-    private final RoadPath roadPath; // Сделали final
+    private final RoadPath roadPath;
+
+    // ВАЖНО: Храним ссылку на выбранную игроком башню для отображения её радиуса
+    private Tower selectedTower = null;
 
     public GameLoop() {
-        // Создаем пустой маршрут. Точки в него запишет GameScreen.resize() динамически
         this.roadPath = new RoadPath();
-
         this.entityManager = new EntityManager();
         this.waveManager = new WaveManager(roadPath);
         this.currencyManager = new CurrencyManager(250, 20);
@@ -30,9 +32,6 @@ public class GameLoop {
         this.shopService = new ShopService();
     }
 
-    /**
-     * Главный метод такта игры, координирующий логику обновления менеджеров.
-     */
     public void update(float deltaTime) {
         waveManager.update(deltaTime, entityManager.getEnemies());
         entityManager.updateEntities(deltaTime, currencyManager);
@@ -41,6 +40,10 @@ public class GameLoop {
     public void addTower(Tower tower) {
         entityManager.addTower(tower);
     }
+
+    // Геттер и сеттер для выделения башни на карте
+    public Tower getSelectedTower() { return selectedTower; }
+    public void setSelectedTower(Tower tower) { this.selectedTower = tower; }
 
     // Пробрасываем геттеры сущностей наружу для рендереров
     public Array<Enemy> getEnemies() { return entityManager.getEnemies(); }

@@ -12,7 +12,7 @@ public class InteractionService extends GestureDetector.GestureAdapter {
     private final Viewport worldViewport;
     private final DragAndDropManager dragAndDropManager;
     private final Vector3 touchPoint = new Vector3();
-    private static final int CELL_SIZE = 64;
+    private static final int CELL_SIZE = 32;
 
     public InteractionService(GameLoop gameLoop, Viewport worldViewport) {
         this.gameLoop = gameLoop;
@@ -25,19 +25,21 @@ public class InteractionService extends GestureDetector.GestureAdapter {
         touchPoint.set(x, y, 0);
         worldViewport.unproject(touchPoint);
 
-        // Округляем координаты до сетки игрового мира
-        float snappedX = MathUtils.floor(touchPoint.x / CELL_SIZE) * CELL_SIZE + 32f;
-        float snappedY = MathUtils.floor(touchPoint.y / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedX = MathUtils.floor(touchPoint.x / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedY = MathUtils.floor(touchPoint.y / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
 
-        CurrencyManager economy = gameLoop.getCurrencyManager();
         for (Tower tower : gameLoop.getTowers()) {
             if (tower.getPosition().dst(snappedX, snappedY) < CELL_SIZE) {
-                if (economy.spendGold(tower.getUpgradeCost())) {
-                    tower.tryUpgrade();
-                }
+                // ИСПРАВЛЕНО: Только выделяем башню для отображения радиуса и вызова кнопки UI
+                gameLoop.setSelectedTower(tower);
+
+                // УДАЛЕНО: Автоматическое списание золота и апгрейд tower.tryUpgrade() отсюда стерты!
                 return true;
             }
         }
+
+        // Если игрок тапнул по свободному месту карты — сбрасываем выделение башни и прячем UI
+        gameLoop.setSelectedTower(null);
         return false;
     }
 

@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
 import io.github.simple_game.core.model.entity.tower.ArcherTower;
 import io.github.simple_game.core.model.entity.tower.CannonTower;
 import io.github.simple_game.core.model.entity.tower.MagicTower;
@@ -20,7 +19,8 @@ public class DragAndDropManager {
     private Tower previewTower = null;
     private boolean isDragging = false;
     private float currentX, currentY;
-    private static final int CELL_SIZE = 64;
+
+    private static final int CELL_SIZE = 32; // Изменили шаг сетки строительства на 32
 
     public DragAndDropManager(GameLoop gameLoop, Viewport worldViewport) {
         this.gameLoop = gameLoop;
@@ -50,8 +50,9 @@ public class DragAndDropManager {
         if (!isDragging) return;
         isDragging = false;
 
-        float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + 32f;
-        float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + 32f;
+        // Выравнивание по уменьшенной сетке 32x32 (центр ячейки теперь +16f)
+        float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         CurrencyManager economy = gameLoop.getCurrencyManager();
 
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
@@ -65,26 +66,25 @@ public class DragAndDropManager {
             }
         }
         draggingType = null;
-        previewTower = null; // Очищаем ссылку для GC
+        previewTower = null;
     }
 
     public void drawPreview(ShapeRenderer shapeRenderer) {
         if (!isDragging || draggingType == null || previewTower == null) return;
 
-        float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + 32f;
-        float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + 32f;
+        float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
+        float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
 
-        // 1. Отрисовка закрашенного квадрата (подсветка доступности клетки)
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
-            shapeRenderer.setColor(new Color(0, 1, 0, 0.3f)); // Полупрозрачный зеленый
+            shapeRenderer.setColor(new Color(0, 1, 0, 0.3f));
         } else {
-            shapeRenderer.setColor(new Color(1, 0, 0, 0.3f)); // Полупрозрачный красный
+            shapeRenderer.setColor(new Color(1, 0, 0, 0.3f));
         }
-        shapeRenderer.rect(snappedX - 32, snappedY - 32, CELL_SIZE, CELL_SIZE);
+        // Подсвечиваем квадрат размером 32x32 вокруг выровненной точки
+        shapeRenderer.rect(snappedX - (CELL_SIZE / 2f), snappedY - (CELL_SIZE / 2f), CELL_SIZE, CELL_SIZE);
         shapeRenderer.end();
 
-        // 2. Отрисовка контура радиуса атаки башни
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(new Color(1, 1, 1, 0.3f));
         shapeRenderer.circle(snappedX, snappedY, previewTower.getAttackRange());
