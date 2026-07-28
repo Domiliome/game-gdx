@@ -7,26 +7,12 @@ import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.service.CurrencyManager;
 
-/**
- * Класс, представляющий самонаводящийся снаряд в игровом мире.
- * Снаряд выпускается оборонительной башней, каждый кадр рассчитывает
- * направление к своей цели и преследует её до момента столкновения или деактивации.
- */
 public class Projectile extends Entity {
     protected final Enemy target;
     protected final float damage;
     protected final float speed;
     protected boolean active = true;
 
-    /**
-     * Создает новый снаряд в заданных координатах, направленный на конкретного врага.
-     *
-     * @param x          начальная координата X появления снаряда (центр башни)
-     * @param y          начальная координата Y появления снаряда (центр башни)
-     * @param target     вражеский юнит, выступающий целью для атаки
-     * @param damage     количество урона, которое будет нанесено цели при попадании
-     * @param towerType  тип башни, выпустившей снаряд (определяет скорость полета)
-     */
     public Projectile(float x, float y, Enemy target, float damage, TowerType towerType) {
         super(x, y);
         this.target = target;
@@ -34,12 +20,6 @@ public class Projectile extends Entity {
         this.speed = determineSpeed(towerType);
     }
 
-    /**
-     * Расчитывает скорость полета снаряда на основе типа башни, которая его выпустила.
-     *
-     * @param towerType тип башни
-     * @return скорость перемещения снаряда в пикселях в секунду
-     */
     private float determineSpeed(TowerType towerType) {
         return switch (towerType) {
             case ARCHER -> 400f;
@@ -49,14 +29,6 @@ public class Projectile extends Entity {
         };
     }
 
-    /**
-     * Перегруженный метод обновления физики полета снаряда каждый кадр.
-     * Если цель пропадает или погибает раньше времени, снаряд деактивируется.
-     * В остальных случаях снаряд летит к координатам врага с учетом игрового времени.
-     *
-     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
-     * @param economy   ссылка на менеджер экономики для проброса во врага при попадании
-     */
     public void update(float deltaTime, CurrencyManager economy) {
         if (!active) return;
 
@@ -79,32 +51,18 @@ public class Projectile extends Entity {
         }
     }
 
-    /**
-     * Базовый метод обновления без параметров.
-     * Оставлен пустым в соответствии с контрактом базоческого класса {@link Entity},
-     * так как логика снаряда требует обязательной передачи контекста экономики.
-     *
-     * @param deltaTime время, прошедшее с предыдущего кадра в секундах
-     */
+
     @Override
     public void update(float deltaTime) {
         // Оставлен пустым, так как необходим вызов перегруженного метода update
     }
 
-    /**
-     * Внутренний метод обработки успешного столкновения снаряда с целью.
-     * Наносит урон врагу с передачей контекста кошелька и переводит снаряд в неактивное состояние.
-     *
-     * @param economy ссылка на менеджер экономики для зачисления золота при убийстве цели
-     */
+
     protected void hitTarget(CurrencyManager economy) {
         active = false;
         target.takeDamage(damage, economy);
     }
 
-    /**
-     * @return true, если снаряд все еще летит к цели; false, если он уже попал или пропал
-     */
     public boolean isActive() {
         return active;
     }

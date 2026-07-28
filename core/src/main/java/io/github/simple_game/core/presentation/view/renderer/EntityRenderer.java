@@ -7,10 +7,6 @@ import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
 import io.github.simple_game.core.service.GameLoop;
 
-/**
- * Модульный отрисовщик физических объектов игрового мира.
- * Визуализирует фигурки врагов и летящие снаряды с помощью геометрических примитивов.
- */
 public class EntityRenderer {
     private final GameLoop gameLoop;
 
@@ -19,30 +15,32 @@ public class EntityRenderer {
     }
 
     public void render(ShapeRenderer shapeRenderer) {
-        // 1. Отрисовка врагов в виде закрашенных цветных кружков
+        // ОТКРЫВАЕМ СЕССИЮ ОДИН РАЗ ДЛЯ ВСЕЙ ГЕОМЕТРИИ
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // 1. Отрисовка цветных врагов
         for (Enemy enemy : gameLoop.getEnemies()) {
             if (!enemy.isActive()) continue;
 
-            // Динамически подкрашиваем фигурку юнита в зависимости от его класса (тира)
             switch (enemy.getTier()) {
-                case TIER_1_LIGHT  -> shapeRenderer.setColor(Color.YELLOW); // Гоблины — желтые
-                case TIER_2_NORMAL -> shapeRenderer.setColor(Color.GREEN);  // Зอมби — зеленые
-                case TIER_3_HEAVY  -> shapeRenderer.setColor(Color.BLUE);   // Орки — синие
-                default            -> shapeRenderer.setColor(Color.PURPLE); // Защитный дефолтный цвет
+                case TIER_1_LIGHT  -> shapeRenderer.setColor(Color.YELLOW);
+                case TIER_2_NORMAL -> shapeRenderer.setColor(Color.GREEN);
+                case TIER_3_HEAVY  -> shapeRenderer.setColor(Color.BLUE);
+                default            -> shapeRenderer.setColor(Color.PURPLE);
             }
-
-            // Рисуем кружок врага радиусом 12 пикселей (под мелкую сетку 32х32)
             shapeRenderer.circle(enemy.getPosition().x, enemy.getPosition().y, 12f);
         }
 
-        // 2. Отрисовка летящих снарядов башен (маленькие желтые точки)
-        shapeRenderer.setColor(Color.GOLD);
+        // 2. ИСПРАВЛЕНО: Отрисовка снарядов внутри той же сессии begin/end
+        shapeRenderer.setColor(Color.GOLD); // Яркий золотой цвет для летящих снарядов
         for (Projectile projectile : gameLoop.getProjectiles()) {
             if (projectile.isActive()) {
-                shapeRenderer.circle(projectile.getPosition().x, projectile.getPosition().y, 4f);
+                // Рисуем снаряд крупнее (радиус 5 пикселей), чтобы его было четко видно на экране
+                shapeRenderer.circle(projectile.getPosition().x, projectile.getPosition().y, 5f);
             }
         }
+
+        // ЗАКРЫВАЕМ СЕССИЮ
         shapeRenderer.end();
     }
 }

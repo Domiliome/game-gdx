@@ -9,7 +9,7 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
+import io.github.simple_game.core.Main;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.CameraGestureService;
@@ -17,6 +17,7 @@ import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
 
 public class GameScreen extends ScreenAdapter {
+    private final Main game; // Храним ссылку на главный класс для переключения экранов
     private OrthographicCamera worldCamera;
     private Viewport worldViewport;
     private OrthographicCamera uiCamera;
@@ -28,22 +29,33 @@ public class GameScreen extends ScreenAdapter {
     private InteractionService interactionService;
     private CameraGestureService cameraGestureService;
 
+    // Конструктор принимает ссылку на Main из точки входа Lwjgl3Launcher
+    public GameScreen(Main game) {
+        this.game = game;
+    }
+
     @Override
     public void show() {
-        worldCamera = new OrthographicCamera();
-        worldViewport = new ExtendViewport(480, 800, worldCamera);
-        uiCamera = new OrthographicCamera();
-        uiViewport = new ScreenViewport(uiCamera);
+        // Если игра запускается впервые (объекты еще не созданы) — инициализируем мир
+        if (gameLoop == null) {
+            worldCamera = new OrthographicCamera();
+            worldViewport = new ExtendViewport(480, 800, worldCamera);
+            uiCamera = new OrthographicCamera();
+            uiViewport = new ScreenViewport(uiCamera);
 
-        gameLoop = new GameLoop();
-        interactionService = new InteractionService(gameLoop, worldViewport);
-        cameraGestureService = new CameraGestureService(worldViewport);
-        gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
+            gameLoop = new GameLoop();
+            interactionService = new InteractionService(gameLoop, worldViewport);
+            cameraGestureService = new CameraGestureService(worldViewport);
+            gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
-        gameInterface = new GameInterface(
-            gameLoop, uiViewport, gameRenderer, interactionService.getDragAndDropManager()
-        );
+            // Пробрасываем Main (game) и этот GameScreen (this) в интерфейс для работы кнопки BAG
+            gameInterface = new GameInterface(
+                gameLoop, uiViewport, gameRenderer,
+                interactionService.getDragAndDropManager(), game, this
+            );
+        }
 
+        // ВАЖНО: Каждый раз при возврате из экрана инвентаря заново активируем мультиплексор ввода
         initInputProcessing();
     }
 
@@ -89,10 +101,6 @@ public class GameScreen extends ScreenAdapter {
         uiViewport.update(width, height, true);
     }
 
-    /**
-     * ИСПРАВЛЕНО: Генерирует ровно 6 ключевых точек вейпоинтов для плавного бега врагов.
-     * Координаты подогнаны строго под шаг сетки 32 с центровкой в +16 пикселей.
-     */
     private void rebuildDynamicPath(float worldHeight) {
         io.github.simple_game.core.model.movement.RoadPath path = gameLoop.getRoadPath();
         path.clear();

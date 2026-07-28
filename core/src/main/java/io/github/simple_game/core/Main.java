@@ -18,6 +18,7 @@ public class Main extends Game {
      */
     @Override
     public void create() {
-        setScreen(new GameScreen());
+        // Передаем себя (this) прямо в конструктор экрана игры
+        setScreen(new GameScreen(this));
     }
 }
