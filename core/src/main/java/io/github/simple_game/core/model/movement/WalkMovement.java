@@ -2,7 +2,7 @@ package io.github.simple_game.core.model.movement;
 
 import com.badlogic.gdx.math.Vector2;
 
-import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.enemy.Enemy;
 
 /**
  * Конкретная реализация стратегии перемещения, описывающая классическую ходьбу наземных юнитов.

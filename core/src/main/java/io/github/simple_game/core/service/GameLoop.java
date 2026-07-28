@@ -2,7 +2,7 @@ package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
 
-import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
 import io.github.simple_game.core.model.entity.tower.Tower;

@@ -2,67 +2,84 @@ package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
 
-import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.enemy.Enemy;
+import io.github.simple_game.core.model.entity.enemy.EnemyTier;
 import io.github.simple_game.core.model.movement.RoadPath;
 
 /**
  * Менеджер управления волнами наступающих врагов.
+ * Автоматически рассчитывает микс разных тиров монстров на основе бюджета сложности.
  */
 public class WaveManager {
     private final RoadPath roadPath;
-    private int currentWaveNumber = 0;
-    private int enemiesLeftToSpawn = 0;
+    private final Array<EnemyTier> spawnQueue = new Array<>(); // Очередь тиров на спавн
 
+    private int currentWaveNumber = 0;
     private float spawnTimer = 0f;
     private final float spawnInterval = 1.0f;
-    private float waveTimer = 0f;
-    private final float timeBetweenWaves = 10f;
     private boolean isWaveActive = false;
 
     public WaveManager(RoadPath roadPath) {
         this.roadPath = roadPath;
     }
 
-    // Измените метод update() в WaveManager.java:
     public void update(float deltaTime, Array<Enemy> enemies) {
         if (isWaveActive) {
             handleSpawning(deltaTime, enemies);
 
-            if (enemiesLeftToSpawn == 0 && enemies.size == 0) {
+            // Волна зачищена, если очередь спавна пуста и на карте не осталось живых врагов
+            if (spawnQueue.size == 0 && enemies.size == 0) {
                 isWaveActive = false;
-                waveTimer = 0f;
                 System.out.println("Wave " + currentWaveNumber + " cleared!");
             }
         }
-        // УДАЛЕНО: автоматический отсчет и вызов startNextWave() по таймеру
     }
 
-    // Делаем метод публичным, чтобы интерфейс мог вызвать его при клике:
     public void startNextWave() {
-        if (isWaveActive) return; // Защита: нельзя запустить волну, пока идет бой
+        if (isWaveActive) return;
         currentWaveNumber++;
         isWaveActive = true;
-        enemiesLeftToSpawn = 4 + currentWaveNumber * 2;
         spawnTimer = 0f;
-        System.out.println("Start wave " + currentWaveNumber + "! Enemy: " + enemiesLeftToSpawn);
+        spawnQueue.clear();
+
+        // Формула бюджета сложности волны (растет с каждым раундом)
+        int waveBudget = 4 + currentWaveNumber * 3;
+
+        // Распределяем тиры врагов, пока не исчерпаем бюджет раунда
+        while (waveBudget > 0) {
+            if (currentWaveNumber >= 5 && waveBudget >= EnemyTier.TIER_3_HEAVY.getWeight() && com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
+                spawnQueue.add(EnemyTier.TIER_3_HEAVY);
+                waveBudget -= EnemyTier.TIER_3_HEAVY.getWeight();
+            } else if (currentWaveNumber >= 3 && waveBudget >= EnemyTier.TIER_2_NORMAL.getWeight() && com.badlogic.gdx.math.MathUtils.randomBoolean(0.4f)) {
+                spawnQueue.add(EnemyTier.TIER_2_NORMAL);
+                waveBudget -= EnemyTier.TIER_2_NORMAL.getWeight();
+            } else {
+                spawnQueue.add(EnemyTier.TIER_1_LIGHT);
+                waveBudget -= EnemyTier.TIER_1_LIGHT.getWeight();
+            }
+        }
+
+        // Случайно перемешиваем очередь, чтобы враги шли вперемешку
+        spawnQueue.shuffle();
+        System.out.println("Start wave " + currentWaveNumber + "! Total units: " + spawnQueue.size);
     }
 
-
     private void handleSpawning(float deltaTime, Array<Enemy> enemies) {
-        if (enemiesLeftToSpawn <= 0) return;
+        if (spawnQueue.size == 0) return;
 
         spawnTimer += deltaTime;
         if (spawnTimer >= spawnInterval) {
-            // Делегируем создание классического наземного врага фабрике
-            Enemy enemy = EnemyFactory.createEnemy(currentWaveNumber, roadPath);
+            // Извлекаем следующий тир из начала очереди
+            EnemyTier nextTier = spawnQueue.removeIndex(0);
+
+
+            Enemy enemy = EnemyFactory.createEnemy(nextTier, currentWaveNumber, roadPath);
             enemies.add(enemy);
 
-            enemiesLeftToSpawn--;
             spawnTimer = 0f;
         }
     }
 
     public int getCurrentWaveNumber() { return currentWaveNumber; }
     public boolean isWaveActive() { return isWaveActive; }
-    public float getTimeUntilNextWave() { return Math.max(0f, timeBetweenWaves - waveTimer); }
 }

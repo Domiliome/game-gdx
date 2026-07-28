@@ -1,6 +1,6 @@
 package io.github.simple_game.core.model.movement;
 
-import io.github.simple_game.core.model.entity.Enemy;
+import io.github.simple_game.core.model.entity.enemy.Enemy;
 
 /**
  * Интерфейс, определяющий контракт для реализации паттерна «Стратегия» (Strategy)
