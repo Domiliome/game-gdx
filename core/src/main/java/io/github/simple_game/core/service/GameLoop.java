@@ -34,7 +34,6 @@ public class GameLoop {
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
 
     }
-// ИСПРАВЛЕНО: Вернули чистый метод. Теперь параметры башни гарантированно не обнулятся!
 public void addTower(Tower tower) {
     entityManager.addTower(tower);
 }
@@ -43,7 +42,6 @@ public void addTower(Tower tower) {
     public Tower getSelectedTower() { return selectedTower; }
     public void setSelectedTower(Tower tower) { this.selectedTower = tower; }
 
-    // Добавили геттер инвентаря — ошибка "cannot find symbol" в InventoryScreen полностью исчезнет!
     public InventoryManager getInventoryManager() { return inventoryManager; }
 
     public Array<Enemy> getEnemies() { return entityManager.getEnemies(); }
