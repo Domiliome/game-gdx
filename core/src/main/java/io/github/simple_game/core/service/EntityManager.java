@@ -17,7 +17,6 @@ public class EntityManager {
     private final Array<Projectile> projectilesToSpawn = new Array<>();
 
     public void updateEntities(float deltaTime, CurrencyManager currencyManager, InventoryManager inventoryManager) {
-        // 1. Обновление и удаление врагов
         for (int i = enemies.size - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
             enemy.update(deltaTime, currencyManager);
@@ -31,18 +30,15 @@ public class EntityManager {
             }
         }
 
-        // 2. ИИ башен и сбор новых снарядов
         projectilesToSpawn.clear();
         for (Tower tower : towers) {
             tower.update(deltaTime, enemies, projectilesToSpawn);
         }
         projectiles.addAll(projectilesToSpawn);
 
-        // 3. ИСПРАВЛЕНО: Передаем currencyManager в метод апдейта снаряда, чтобы активировать его физику полета!
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
 
-            // Вызываем ваш оригинальный рабочий метод с двумя аргументами
             projectile.update(deltaTime, currencyManager);
 
             if (!projectile.isActive()) {

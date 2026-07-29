@@ -21,7 +21,6 @@ public class GameRenderer {
     private final SpriteBatch batch;
     private final ShapeRenderer shapeRenderer;
 
-    // Наши новые модули рендеринга
     private final WorldSpriteRenderer worldSpriteRenderer;
     private final DebugGridRenderer debugGridRenderer;
     private final EntityRenderer entityRenderer;
@@ -33,7 +32,6 @@ public class GameRenderer {
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
 
-        // Инициализируем маленькие подклассы
         this.worldSpriteRenderer = new WorldSpriteRenderer(gameLoop);
         this.debugGridRenderer = new DebugGridRenderer(gameLoop);
         this.entityRenderer = new EntityRenderer(gameLoop);
@@ -44,23 +42,20 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // Получаем текущую динамическую высоту расширенного игрового мира
+
         float currentWorldHeight = camera.viewportHeight;
 
-        // Определяем, перетаскивает ли игрок башню прямо сейчас
         boolean isDraggingActive = interactionService != null &&
                                    interactionService.getDragAndDropManager().isDragging();
 
-        // 1. Отрисовка спрайтов (карта, башни)
+
         batch.begin();
         worldSpriteRenderer.render(batch, currentWorldHeight);
         batch.end();
 
-        // 2. Отрисовка линий и сетки (теперь передаем флаг перетаскивания)
         debugGridRenderer.render(shapeRenderer, currentWorldHeight, isDraggingActive);
         entityRenderer.render(shapeRenderer);
 
-        // 3. Отрисовка элементов с прозрачностью (полоски здоровья)
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         healthBarRenderer.render(shapeRenderer, batch);
@@ -89,7 +84,6 @@ public class GameRenderer {
         }
     }
 
-    // Геттеры для передачи текстур в слой Scene2D интерфейса (ShopPanel)
     public Texture getArcherTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.ARCHER); }
     public Texture getCannonTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.CANNON); }
     public Texture getMagicTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.MAGIC); }

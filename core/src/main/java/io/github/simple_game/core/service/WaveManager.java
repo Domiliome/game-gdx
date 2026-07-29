@@ -27,7 +27,6 @@ public class WaveManager {
         if (isWaveActive) {
             handleSpawning(deltaTime, enemies);
 
-            // Волна зачищена, если очередь спавна пуста и на карте не осталось живых врагов
             if (spawnQueue.size == 0 && enemies.size == 0) {
                 isWaveActive = false;
                 System.out.println("Wave " + currentWaveNumber + " cleared!");
@@ -42,10 +41,8 @@ public class WaveManager {
         spawnTimer = 0f;
         spawnQueue.clear();
 
-        // Формула бюджета сложности волны (растет с каждым раундом)
         int waveBudget = 4 + currentWaveNumber * 3;
 
-        // Распределяем тиры врагов, пока не исчерпаем бюджет раунда
         while (waveBudget > 0) {
             if (currentWaveNumber >= 5 && waveBudget >= EnemyTier.TIER_3_HEAVY.getWeight() && com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
                 spawnQueue.add(EnemyTier.TIER_3_HEAVY);
@@ -59,7 +56,6 @@ public class WaveManager {
             }
         }
 
-        // Случайно перемешиваем очередь, чтобы враги шли вперемешку
         spawnQueue.shuffle();
         System.out.println("Start wave " + currentWaveNumber + "! Total units: " + spawnQueue.size);
     }
@@ -69,7 +65,6 @@ public class WaveManager {
 
         spawnTimer += deltaTime;
         if (spawnTimer >= spawnInterval) {
-            // Извлекаем следующий тир из начала очереди
             EnemyTier nextTier = spawnQueue.removeIndex(0);
 
 

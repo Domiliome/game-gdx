@@ -30,15 +30,11 @@ public class InteractionService extends GestureDetector.GestureAdapter {
 
         for (Tower tower : gameLoop.getTowers()) {
             if (tower.getPosition().dst(snappedX, snappedY) < CELL_SIZE) {
-                // ИСПРАВЛЕНО: Только выделяем башню для отображения радиуса и вызова кнопки UI
                 gameLoop.setSelectedTower(tower);
-
-                // УДАЛЕНО: Автоматическое списание золота и апгрейд tower.tryUpgrade() отсюда стерты!
                 return true;
             }
         }
 
-        // Если игрок тапнул по свободному месту карты — сбрасываем выделение башни и прячем UI
         gameLoop.setSelectedTower(null);
         return false;
     }

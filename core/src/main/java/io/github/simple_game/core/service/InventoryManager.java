@@ -15,14 +15,11 @@ import io.github.simple_game.core.model.entity.items.SharpArrow;
  * и рассчитывает вероятность выпадения лута на основе полиморфных классов предметов.
  */
 public class InventoryManager {
-    // Наш рюкзак: динамический массив накопленных абстрактных предметов
     private final Array<Item> backpack = new Array<>();
 
-    // Статический реестр доступных в игре предметов для розыгрыша дропа
     private final Array<Item> lootTable = new Array<>();
 
     public InventoryManager() {
-        // Регистрируем инстансы конкретных предметов в общую таблицу лута
         lootTable.add(new SharpArrow());
         lootTable.add(new IronCore());
         lootTable.add(new MagicCrystal());
@@ -47,7 +44,7 @@ public class InventoryManager {
             if (MathUtils.random() <= item.getDropChance()) {
                 backpack.add(item);
                 System.out.println("🎉 ПРЕДМЕТ ВЫПАЛ: " + item.getName() + " (" + item.getDescription() + ")!");
-                break; // С одного врага за раз падает не больше одного предмета
+                break;
             }
         }
     }
