@@ -35,12 +35,11 @@ public class InventoryManager {
         EnemyTier deadEnemyTier = enemy.getTier();
 
         for (Item item : lootTable) {
-            // Если предмет жестко привязан к другому тиру врагов — пропускаем его
+
             if (item.getRequiredTier() != null && item.getRequiredTier() != deadEnemyTier) {
                 continue;
             }
 
-            // Генерируем случайное число от 0.0 до 1.0. Если оно меньше шанса дропа — предмет выбит!
             if (MathUtils.random() <= item.getDropChance()) {
                 backpack.add(item);
                 System.out.println("🎉 ПРЕДМЕТ ВЫПАЛ: " + item.getName() + " (" + item.getDescription() + ")!");
