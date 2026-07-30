@@ -8,9 +8,9 @@ public class FastGoblin extends Enemy {
 
     public FastGoblin(float x, float y, float hpMod, float speedMod) {
         super(x, y);
-        this.health = 50f * hpMod;       // Базовое хлипкое здоровье
-        this.speed = 130f * speedMod;    // Очень высокая базовая скорость
-        this.goldReward = 15;            // Небольшая награда за убийство
+        this.health = 50f * hpMod;
+        this.speed = 130f * speedMod;
+        this.goldReward = 15;
         this.tier = EnemyTier.TIER_1_LIGHT;
     }
 }

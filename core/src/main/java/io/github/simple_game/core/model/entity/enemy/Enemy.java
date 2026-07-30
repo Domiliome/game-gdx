@@ -11,7 +11,7 @@ import io.github.simple_game.core.service.CurrencyManager;
 public abstract class Enemy extends Entity {
     protected float health;
     protected float speed;
-    protected int goldReward; // Динамическая награда за конкретный класс врага
+    protected int goldReward;
     protected EnemyTier tier;
 
     private boolean active = true;

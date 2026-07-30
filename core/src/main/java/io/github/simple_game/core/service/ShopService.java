@@ -9,7 +9,7 @@ import io.github.simple_game.core.model.entity.tower.TowerType;
 public class ShopService {
 
     public ShopService() {
-        // Конструктор пуст, так как Scene2D берет TowerType.values() напрямую
+
     }
 
     /**
