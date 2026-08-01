@@ -10,14 +10,12 @@ import io.github.simple_game.core.model.entity.items.Item;
 import io.github.simple_game.core.model.entity.items.MagicCrystal;
 import io.github.simple_game.core.model.entity.items.SharpArrow;
 
-/**
- * Сервис управления инвентарем. Хранит массив выбитых трофеев
- * и рассчитывает вероятность выпадения лута на основе полиморфных классов предметов.
- */
 public class InventoryManager {
     private final Array<Item> backpack = new Array<>();
-
     private final Array<Item> lootTable = new Array<>();
+
+    // ВАЖНО: Массив активных гнёзд (максимум 3 слота экипировки)
+    private final Array<Item> equippedSlots = new Array<>(3);
 
     public InventoryManager() {
         lootTable.add(new SharpArrow());
@@ -25,29 +23,43 @@ public class InventoryManager {
         lootTable.add(new MagicCrystal());
     }
 
-    /**
-     * Вызывается автоматически при смерти врага. Проверяет шансы выпадения
-     * артефактов, соответствующих тиру погибшего монстра.
-     *
-     * @param enemy погибший враг, с которого рассчитывается дроп
-     */
     public void calculateLootDrop(Enemy enemy) {
         EnemyTier deadEnemyTier = enemy.getTier();
 
         for (Item item : lootTable) {
-
             if (item.getRequiredTier() != null && item.getRequiredTier() != deadEnemyTier) {
                 continue;
             }
-
             if (MathUtils.random() <= item.getDropChance()) {
-                backpack.add(item);
-                System.out.println("🎉 ПРЕДМЕТ ВЫПАЛ: " + item.getName() + " (" + item.getDescription() + ")!");
+                backpack.add(item.clonePrototype());
+                System.out.println("take loot : " + item.getName() + " from enemy tier " + deadEnemyTier);
                 break;
             }
         }
     }
 
+
+    // Экипировать предмет из рюкзака в активное гнездо
+    public boolean equipItem(Item item) {
+        if (equippedSlots.size < 3 && backpack.removeValue(item, true)) {
+            equippedSlots.add(item);
+            return true;
+        }
+        return false;
+    }
+
+    // Снять предмет из активного гнезда обратно в рюкзак
+    public void unequipItem(Item item) {
+        if (equippedSlots.removeValue(item, true)) {
+            backpack.add(item);
+        }
+    }
+
     public Array<Item> getBackpack() { return backpack; }
-    public void clear() { backpack.clear(); }
+    public Array<Item> getEquippedSlots() { return equippedSlots; } // Геттер гнёзд
+
+    public void clear() {
+        backpack.clear();
+        equippedSlots.clear();
+    }
 }

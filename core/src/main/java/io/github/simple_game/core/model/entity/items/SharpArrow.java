@@ -8,11 +8,14 @@ public class SharpArrow extends Item {
     public SharpArrow() {
         super("Rusty Arrow", "Archer range +40", 0.15f, EnemyTier.TIER_1_LIGHT);
     }
+    @Override
+    public Item clonePrototype() { return new SharpArrow(); }
 
     @Override
     public void applyEffect(Tower tower) {
         if (tower.getType() == TowerType.ARCHER) {
-            tower.setAttackRange(tower.getAttackRange() + 40f);
+            // Прямо прибавляем бонус к текущему динамическому значению радиуса
+            tower.setDynamicRange(tower.getDynamicRange() + 40f);
         }
     }
 }

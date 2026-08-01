@@ -34,9 +34,11 @@ public class GameLoop {
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
 
     }
-public void addTower(Tower tower) {
-    entityManager.addTower(tower);
-}
+    public void addTower(Tower tower) {
+        entityManager.addTower(tower);
+    }
+
+
 
 
     public Tower getSelectedTower() { return selectedTower; }

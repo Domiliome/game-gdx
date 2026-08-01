@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 
 import io.github.simple_game.core.model.entity.Entity;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
+import io.github.simple_game.core.model.entity.items.Item;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
 import io.github.simple_game.core.service.GameLoop;
 
@@ -13,10 +14,16 @@ public abstract class Tower extends Entity {
     protected int currentLevel = 1;
     protected int maxLevel = 5;
 
+    // БАЗОВЫЕ характеристики (чистые, без шмоток)
+    protected float baseDamage;
+    protected float baseAttackRange;
+    protected float baseAttackCooldown;
+    protected float shootTimer = 0f;
+
+    // ДИНАМИЧЕСКИЕ характеристики (с учетом шмоток в текущем кадре)
     protected float damage;
     protected float attackRange;
     protected float attackCooldown;
-    protected float shootTimer = 0f;
 
     protected Enemy target;
 
@@ -28,8 +35,27 @@ public abstract class Tower extends Entity {
 
     public abstract void tryUpgrade();
     public abstract int getUpgradeCost();
+    protected abstract void shoot(Array<Projectile> projectilesToSpawn);
 
     public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
+        // СИНХРОНИЗАЦИЯ: Если подкласс башни записал данные в старые переменные (а base еще равен 0)
+        // мы автоматически инициализируем базовые параметры, чтобы ничего не сломать!
+        if (baseDamage == 0 && damage > 0) {
+            baseDamage = damage;
+            baseAttackRange = attackRange;
+            baseAttackCooldown = attackCooldown;
+        }
+
+        // Каждое мгновение сбрасываем параметры до базовых (чистых) значений
+        this.damage = baseDamage;
+        this.attackRange = baseAttackRange;
+        this.attackCooldown = baseAttackCooldown;
+
+        // ПАТТЕРН СТРАТЕГИЯ: Накладываем эффекты предметов из активных гнёзд в реальном времени
+        for (Item item : gameLoop.getInventoryManager().getEquippedSlots()) {
+            item.applyEffect(this);
+        }
+
         checkAndFindTarget(enemies);
 
         if (target != null) {
@@ -43,16 +69,13 @@ public abstract class Tower extends Entity {
         }
     }
 
-    @Override
-    public void update(float deltaTime) {
-        // Логика требует перегруженного update
-    }
+
+    @Override public void update(float deltaTime) {}
 
     protected void checkAndFindTarget(Array<Enemy> enemies) {
         if (target != null && target.isActive() && position.dst(target.getPosition()) <= attackRange) {
             return;
         }
-
         target = null;
         for (Enemy enemy : enemies) {
             if (enemy.isActive() && position.dst(enemy.getPosition()) <= attackRange) {
@@ -62,17 +85,18 @@ public abstract class Tower extends Entity {
         }
     }
 
-    protected abstract void shoot(Array<Projectile> projectilesToSpawn);
-
-    // Геттеры
+    // Геттеры динамических (финальных) значений для стрельбы и рендеринга кругов
     public float getAttackRange() { return attackRange; }
     public float getDamage() { return damage; }
     public float getAttackCooldown() { return attackCooldown; }
     public TowerType getType() { return type; }
     public int getCurrentLevel() { return currentLevel; }
 
-    // ВАЖНО: Сеттеры для динамического изменения параметров предметами-стратегиями
-    public void setAttackRange(float attackRange) { this.attackRange = attackRange; }
-    public void setDamage(float damage) { this.damage = damage; }
-    public void setAttackCooldown(float attackCooldown) { this.attackCooldown = attackCooldown; }
+    // Геттеры/Сеттеры для предметов-стратегий, чтобы они модифицировали временные параметры
+    public float getDynamicRange() { return attackRange; }
+    public void setDynamicRange(float r) { this.attackRange = r; }
+    public float getDynamicDamage() { return damage; }
+    public void setDynamicDamage(float d) { this.damage = d; }
+    public float getDynamicCooldown() { return attackCooldown; }
+    public void setDynamicCooldown(float c) { this.attackCooldown = c; }
 }

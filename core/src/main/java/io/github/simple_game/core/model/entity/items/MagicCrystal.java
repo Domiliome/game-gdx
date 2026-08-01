@@ -6,13 +6,15 @@ import io.github.simple_game.core.model.entity.tower.TowerType;
 
 public class MagicCrystal extends Item {
     public MagicCrystal() {
-        super("Mana Crystal", "Magic cooldown -20%", 0.08f, EnemyTier.TIER_2_NORMAL);
+        super("Mana Crystal", "Magic cooldown -20%", 0.08f,EnemyTier.TIER_2_NORMAL);
     }
+    @Override
+    public Item clonePrototype() { return new MagicCrystal(); }
 
     @Override
     public void applyEffect(Tower tower) {
         if (tower.getType() == TowerType.MAGIC) {
-            tower.setAttackCooldown(tower.getAttackCooldown() * 0.8f);
+            tower.setDynamicCooldown(tower.getDynamicCooldown() * 0.8f);
         }
     }
 }
