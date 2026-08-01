@@ -48,6 +48,11 @@ public class EntityManager {
     }
 
     public void addTower(Tower tower) { towers.add(tower); }
+    public void removeTower(Tower tower) {
+        if (tower != null) {
+            towers.removeValue(tower, true);
+        }
+    }
     public Array<Enemy> getEnemies() { return enemies; }
     public Array<Tower> getTowers() { return towers; }
     public Array<Projectile> getProjectiles() { return projectiles; }
