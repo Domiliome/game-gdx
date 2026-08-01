@@ -35,4 +35,5 @@ public enum TowerType {
      * @return количество золота, необходимое для покупки и постройки башни
      */
     public int getCost() { return cost; }
+
 }
