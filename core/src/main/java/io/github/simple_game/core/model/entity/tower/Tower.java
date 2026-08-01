@@ -38,20 +38,19 @@ public abstract class Tower extends Entity {
     protected abstract void shoot(Array<Projectile> projectilesToSpawn);
 
     public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
-        // СИНХРОНИЗАЦИЯ: Если подкласс башни записал данные в старые переменные (а base еще равен 0)
-        // мы автоматически инициализируем базовые параметры, чтобы ничего не сломать!
+
         if (baseDamage == 0 && damage > 0) {
             baseDamage = damage;
             baseAttackRange = attackRange;
             baseAttackCooldown = attackCooldown;
         }
 
-        // Каждое мгновение сбрасываем параметры до базовых (чистых) значений
+
         this.damage = baseDamage;
         this.attackRange = baseAttackRange;
         this.attackCooldown = baseAttackCooldown;
 
-        // ПАТТЕРН СТРАТЕГИЯ: Накладываем эффекты предметов из активных гнёзд в реальном времени
+
         for (Item item : gameLoop.getInventoryManager().getEquippedSlots()) {
             item.applyEffect(this);
         }
