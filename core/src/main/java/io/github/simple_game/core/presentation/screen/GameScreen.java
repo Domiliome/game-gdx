@@ -17,7 +17,7 @@ import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
-import io.github.simple_game.core.service.InteractionService;
+import io.github.simple_game.core.service.InteractionService; // Правильный импорт генератора
 
 public class GameScreen extends ScreenAdapter {
     private final Main game;
@@ -32,7 +32,6 @@ public class GameScreen extends ScreenAdapter {
     private InteractionService interactionService;
     private CameraGestureService cameraGestureService;
 
-    // Переменная для фиксации случайного типа генерации на текущий матч
     private PathType activeMapType;
 
     public GameScreen(Main game) {
@@ -47,17 +46,26 @@ public class GameScreen extends ScreenAdapter {
             uiCamera = new OrthographicCamera();
             uiViewport = new ScreenViewport(uiCamera);
 
-            gameLoop = new GameLoop();
+            gameLoop = new GameLoop(game);
+
             interactionService = new InteractionService(gameLoop, worldViewport);
             cameraGestureService = new CameraGestureService(worldViewport);
             gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
             gameInterface = new GameInterface(
                 gameLoop, uiViewport, gameRenderer,
-                interactionService.getDragAndDropManager(), game, this
+                interactionService.getDragAndDropManager(), game, this,
+                new Runnable() {
+                    @Override
+                    public void run() {
+
+                        gameLoop = null;
+                        show();
+                        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+                    }
+                }
             );
 
-            // ИСПРАВЛЕНО: Выбираем один случайный алгоритм дороги из трех доступных при старте игры
             PathType[] types = PathType.values();
             this.activeMapType = types[com.badlogic.gdx.math.MathUtils.random(0, types.length - 1)];
         }
@@ -78,9 +86,14 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        gameLoop.update(delta);
-        if (cameraGestureService != null) {
-            cameraGestureService.updateInertia(delta);
+        boolean isGameOver = gameLoop.getCurrencyManager().getLives() <= 0;
+        boolean isVictory = gameLoop.isVictory();
+
+        if (!isGameOver && !isVictory) {
+            gameLoop.update(delta);
+            if (cameraGestureService != null) {
+                cameraGestureService.updateInertia(delta);
+            }
         }
 
         worldViewport.apply();
@@ -102,7 +115,6 @@ public class GameScreen extends ScreenAdapter {
         worldCamera.position.set(worldW / 2f, worldH / 2f, 0);
         worldCamera.update();
 
-        // Безопасно перестраиваем сохраненный тип пути под высоту экрана смартфона
         rebuildDynamicPath(worldH);
 
         uiViewport.update(width, height, true);
@@ -110,8 +122,6 @@ public class GameScreen extends ScreenAdapter {
 
     private void rebuildDynamicPath(float worldHeight) {
         io.github.simple_game.core.model.movement.RoadPath path = gameLoop.getRoadPath();
-
-        // ИСПРАВЛЕНО: Передаем зафиксированный activeMapType в процедурный рандом-генератор
         PathGenerator.generate(path, activeMapType, worldHeight);
     }
 

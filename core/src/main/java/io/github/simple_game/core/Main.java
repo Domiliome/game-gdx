@@ -1,24 +1,26 @@
 package io.github.simple_game.core;
 
 import com.badlogic.gdx.Game;
-
 import io.github.simple_game.core.presentation.screen.GameScreen;
+import io.github.simple_game.core.service.InventoryManager; // Наш менеджер рюкзака
 
-/**
- * Главный управляющий класс приложения (Точка входа кроссплатформенной логики).
- * Наследуется от класса {@link Game} фреймворка LibGDX. Отвечает за инициализацию
- * базовых систем игры при старте и делегирует управление активными экранами
- * (например, переключение между главным меню и игровым экраном).
- */
 public class Main extends Game {
+    // ВАЖНО: Делаем инвентарь глобальным полем игрового процесса
+    private InventoryManager globalInventory;
 
-    /**
-     * Вызывается автоматически фреймворком в момент запуска приложения на целевой платформе.
-     * Устанавливает основной игровой экран {@link GameScreen} в качестве текущего активного окна.
-     */
     @Override
     public void create() {
-        // Передаем себя (this) прямо в конструктор экрана игры
+        // Инициализируем рюкзак строго ОДИН РАЗ за всё время жизни приложения
+        this.globalInventory = new InventoryManager();
+
+        // Передаем экран игры дальше
         setScreen(new GameScreen(this));
+    }
+
+    /**
+     * @return ссылка на персистентный рюкзак, который никогда не сбрасывается между сессиями
+     */
+    public InventoryManager getGlobalInventory() {
+        return globalInventory;
     }
 }
