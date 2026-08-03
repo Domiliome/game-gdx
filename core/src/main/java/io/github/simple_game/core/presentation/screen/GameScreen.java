@@ -55,16 +55,14 @@ public class GameScreen extends ScreenAdapter {
             gameInterface = new GameInterface(
                 gameLoop, uiViewport, gameRenderer,
                 interactionService.getDragAndDropManager(), game, this,
-                new Runnable() {
-                    @Override
-                    public void run() {
-
-                        gameLoop = null;
-                        show();
-                        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-                    }
+                () -> {
+                    gameLoop = null;
+                    show();
+                    resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
                 }
             );
+
+
 
             PathType[] types = PathType.values();
             this.activeMapType = types[com.badlogic.gdx.math.MathUtils.random(0, types.length - 1)];
