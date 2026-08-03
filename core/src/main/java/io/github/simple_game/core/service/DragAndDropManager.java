@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
 import io.github.simple_game.core.model.entity.tower.ArcherTower;
 import io.github.simple_game.core.model.entity.tower.CannonTower;
 import io.github.simple_game.core.model.entity.tower.MagicTower;
@@ -20,7 +21,7 @@ public class DragAndDropManager {
     private boolean isDragging = false;
     private float currentX, currentY;
 
-    private static final int CELL_SIZE = 32; // Изменили шаг сетки строительства на 32
+    private static final int CELL_SIZE = 32;
 
     public DragAndDropManager(GameLoop gameLoop, Viewport worldViewport) {
         this.gameLoop = gameLoop;
@@ -50,12 +51,12 @@ public class DragAndDropManager {
         if (!isDragging) return;
         isDragging = false;
 
-        // Выравнивание по уменьшенной сетке 32x32 (центр ячейки теперь +16f)
         float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         CurrencyManager economy = gameLoop.getCurrencyManager();
 
-        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
+        // ИСПРАВЛЕНО: Передаем gameLoop в метод isCellBuildable, а старый метод isCellFree полностью удален
+        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
             if (economy.spendGold(draggingType.getCost())) {
                 Tower towerToPlace = switch (draggingType) {
                     case ARCHER -> new ArcherTower(snappedX, snappedY, gameLoop);
@@ -76,12 +77,12 @@ public class DragAndDropManager {
         float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY) && isCellFree(snappedX, snappedY)) {
+        // ИСПРАВЛЕНО: Передаем gameLoop для динамической проверки дистанции до соседних башен в реальном времени
+        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
             shapeRenderer.setColor(new Color(0, 1, 0, 0.3f));
         } else {
             shapeRenderer.setColor(new Color(1, 0, 0, 0.3f));
         }
-        // Подсвечиваем квадрат размером 32x32 вокруг выровненной точки
         shapeRenderer.rect(snappedX - (CELL_SIZE / 2f), snappedY - (CELL_SIZE / 2f), CELL_SIZE, CELL_SIZE);
         shapeRenderer.end();
 
@@ -89,13 +90,6 @@ public class DragAndDropManager {
         shapeRenderer.setColor(new Color(1, 1, 1, 0.3f));
         shapeRenderer.circle(snappedX, snappedY, previewTower.getAttackRange());
         shapeRenderer.end();
-    }
-
-    private boolean isCellFree(float x, float y) {
-        for (Tower tower : gameLoop.getTowers()) {
-            if (tower.getPosition().dst(x, y) < CELL_SIZE) return false;
-        }
-        return true;
     }
 
     public boolean isDragging() { return isDragging; }
