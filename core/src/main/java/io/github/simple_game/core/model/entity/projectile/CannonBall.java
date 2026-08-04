@@ -41,25 +41,13 @@ public class CannonBall extends Projectile {
      */
     @Override
     protected void hitTarget(CurrencyManager economy) {
-        // Помечаем текущий снаряд неактивным, чтобы удалить его из игры
         active = false;
-
-        // Запоминаем точные координаты эпицентра взрыва
         float explosionX = position.x;
         float explosionY = position.y;
-
-
-        // Получаем массив всех активных врагов, находящихся сейчас на карте
         Array<Enemy> allEnemies = gameLoop.getEnemies();
-
-        // Проходим по врагам с конца в начало (обратный цикл) для безопасного удаления объектов при гибели
         for (int i = allEnemies.size - 1; i >= 0; i--) {
             Enemy currentEnemy = allEnemies.get(i);
-
-            // Вычисляем расстояние от эпицентра взрыва до текущего проверяемого врага
             float distanceToExplosion = currentEnemy.getPosition().dst(explosionX, explosionY);
-
-            // Если враг находится внутри взрывной волны — наносим урон
             if (distanceToExplosion <= BLAST_RADIUS) {
                 currentEnemy.takeDamage(damage, economy);
 

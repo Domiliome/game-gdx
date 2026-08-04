@@ -15,6 +15,15 @@ public abstract class Item {
         this.dropChance = dropChance;
         this.requiredTier = requiredTier; // Важно: проверяем запись!
     }
+    // Добавьте этот метод внутрь абстрактного класса Item.java:
+    /**
+     * Проверяет, подходит ли текущий состав ингредиентов в кузнице для создания этого предмета.
+     * @param forgeSlots массив из 3-х предметов, лежащих в ячейках перековки
+     * @return true, если рецепт совпадает; false в противном случае
+     */
+    public boolean checkRecipe(com.badlogic.gdx.utils.Array<Item> forgeSlots) {
+        return false; // По умолчанию обычные шмотки скрафтить нельзя
+    }
 
     public abstract void applyEffect(Tower tower);
     public abstract Item clonePrototype();
