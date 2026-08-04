@@ -17,12 +17,12 @@ public class GameLoop {
     private final GameGrid gameGrid;
     private final ShopService shopService;
     private final RoadPath roadPath;
-    private final InventoryManager inventoryManager; // Ссылка на глобальный рюкзак
+    private final InventoryManager inventoryManager;
 
     private Tower selectedTower = null;
-    private boolean isVictory = false; // Флаг победы в сессии
+    private boolean isVictory = false;
 
-    // Конструктор теперь принимает ссылку на ядро Main
+
     public GameLoop(Main game) {
         this.roadPath = new RoadPath();
         this.entityManager = new EntityManager();
@@ -30,13 +30,11 @@ public class GameLoop {
         this.currencyManager = new CurrencyManager(250, 20);
         this.gameGrid = new GameGrid(roadPath);
         this.shopService = new ShopService();
-
-        // Подтягиваем персистентный рюкзак из главного класса!
         this.inventoryManager = game.getGlobalInventory();
     }
 
     public void update(float deltaTime) {
-        if (isVictory) return; // Если игра выиграна — замораживаем мир
+        if (isVictory) return;
 
         waveManager.update(deltaTime, entityManager.getEnemies());
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
