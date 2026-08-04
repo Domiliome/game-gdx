@@ -3,7 +3,7 @@ package io.github.simple_game.core.service;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.viewport.Viewport; // Обязательный новый импорт
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class CameraGestureService extends GestureDetector.GestureAdapter {
     private final Viewport worldViewport;
@@ -67,9 +67,9 @@ public class CameraGestureService extends GestureDetector.GestureAdapter {
         float halfW = (camera.viewportWidth * camera.zoom) / 2f;
         float halfH = (camera.viewportHeight * camera.zoom) / 2f;
 
-        // Запрашиваем динамические размеры, которые посчитал ExtendViewport
-        float worldW = worldViewport.getWorldWidth();  // Всегда 480
-        float worldH = worldViewport.getWorldHeight(); // Динамическая высота (например, 1020)
+
+        float worldW = worldViewport.getWorldWidth();
+        float worldH = worldViewport.getWorldHeight();
 
         if (halfW * 2f > worldW) { camera.zoom = worldW / camera.viewportWidth; halfW = worldW / 2f; }
         if (halfH * 2f > worldH) { camera.zoom = worldH / camera.viewportHeight; halfH = worldH / 2f; }

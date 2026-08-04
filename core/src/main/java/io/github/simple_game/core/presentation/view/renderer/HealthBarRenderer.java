@@ -16,12 +16,12 @@ public class HealthBarRenderer {
     public HealthBarRenderer(GameLoop gameLoop) {
         this.gameLoop = gameLoop;
         this.lvlFont = new BitmapFont();
-        this.lvlFont.setColor(Color.CYAN); // Бирюзовый цвет для уровней башен
-        this.lvlFont.getData().setScale(1.2f); // Компактный размер текста
+        this.lvlFont.setColor(Color.CYAN);
+        this.lvlFont.getData().setScale(1.2f);
     }
 
     public void render(ShapeRenderer shapeRenderer, SpriteBatch batch) {
-        // 1. Рисуем полоски здоровья врагов (ShapeRenderer Filled)
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (Enemy enemy : gameLoop.getEnemies()) {
             float x = enemy.getPosition().x;
@@ -34,7 +34,7 @@ public class HealthBarRenderer {
         }
         shapeRenderer.end();
 
-        // 2. Рисуем уровень над головой каждой башни (SpriteBatch)
+
         batch.begin();
         for (Tower tower : gameLoop.getTowers()) {
             float x = tower.getPosition().x;

@@ -15,7 +15,7 @@ public class EntityRenderer {
     }
 
     public void render(ShapeRenderer shapeRenderer) {
-        // ОТКРЫВАЕМ СЕССИЮ ОДИН РАЗ ДЛЯ ВСЕЙ ГЕОМЕТРИИ
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // 1. Отрисовка цветных врагов
@@ -31,11 +31,11 @@ public class EntityRenderer {
             shapeRenderer.circle(enemy.getPosition().x, enemy.getPosition().y, 12f);
         }
 
-        // 2. ИСПРАВЛЕНО: Отрисовка снарядов внутри той же сессии begin/end
-        shapeRenderer.setColor(Color.GOLD); // Яркий золотой цвет для летящих снарядов
+
+        shapeRenderer.setColor(Color.GOLD);
         for (Projectile projectile : gameLoop.getProjectiles()) {
             if (projectile.isActive()) {
-                // Рисуем снаряд крупнее (радиус 5 пикселей), чтобы его было четко видно на экране
+
                 shapeRenderer.circle(projectile.getPosition().x, projectile.getPosition().y, 5f);
             }
         }

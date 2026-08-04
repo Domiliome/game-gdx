@@ -12,8 +12,8 @@ public class CurrencyManager {
     /**
      * Создает менеджер экономики со стартовыми значениями для текущего уровня.
      *
-     * @param startingGold  начальное количество золота у игрока (например, 300)
-     * @param startingLives начальное количество жизней базы (например, 20)
+     * @param startingGold  начальное количество золота у игрока
+     * @param startingLives начальное количество жизней базы
      */
     public CurrencyManager(int startingGold, int startingLives) {
         this.gold = startingGold;

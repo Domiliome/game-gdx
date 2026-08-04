@@ -55,7 +55,7 @@ public class DragAndDropManager {
         float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         CurrencyManager economy = gameLoop.getCurrencyManager();
 
-        // ИСПРАВЛЕНО: Передаем gameLoop в метод isCellBuildable, а старый метод isCellFree полностью удален
+
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
             if (economy.spendGold(draggingType.getCost())) {
                 Tower towerToPlace = switch (draggingType) {
@@ -77,7 +77,7 @@ public class DragAndDropManager {
         float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        // ИСПРАВЛЕНО: Передаем gameLoop для динамической проверки дистанции до соседних башен в реальном времени
+
         if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
             shapeRenderer.setColor(new Color(0, 1, 0, 0.3f));
         } else {

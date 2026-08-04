@@ -1,6 +1,7 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.math.Vector2;
+
 import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.enemy.EnemyTier;
 import io.github.simple_game.core.model.entity.enemy.FastGoblin;
@@ -15,7 +16,7 @@ import io.github.simple_game.core.model.movement.WalkMovement;
 public class EnemyFactory {
 
     public static Enemy createEnemy(EnemyTier tier, int waveNumber, RoadPath roadPath) {
-        // Получаем точку старта
+
         Vector2 startPoint = roadPath.getPoint(0);
 
         // Общая математическая прогрессия сложности от номера волны (+10% за раунд)

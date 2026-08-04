@@ -26,7 +26,6 @@ public class WorldSpriteRenderer {
     public void render(SpriteBatch batch, float worldHeight) {
         batch.draw(mapTexture, 0, 0, 480, worldHeight);
         for (Tower tower : gameLoop.getTowers()) {
-            // Смещение центра теперь 16 пикселей (CELL_SIZE / 2), чтобы башня стояла ровно в узле сетки
             float x = tower.getPosition().x - (CELL_SIZE / 2f);
             float y = tower.getPosition().y - (CELL_SIZE / 2f);
             batch.draw(getTexture(tower.getType()), x, y, CELL_SIZE, CELL_SIZE);

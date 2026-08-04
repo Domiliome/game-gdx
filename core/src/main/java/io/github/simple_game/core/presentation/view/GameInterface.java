@@ -18,7 +18,7 @@ public class GameInterface {
     private final Stage stage;
     private final TopStatusBar statusBar;
 
-    // ИСПРАВЛЕНО: Добавлен параметр Runnable exitToMenuAction для возврата на главный экран
+
     public GameInterface(GameLoop gameLoop, Viewport uiViewport, GameRenderer renderer, DragAndDropManager dragManager,
                          Main game, GameScreen gameScreen, Runnable restartAction, Runnable exitToMenuAction) {
         this.stage = new Stage(uiViewport);
@@ -30,7 +30,7 @@ public class GameInterface {
         ShopPanel shopPanel = new ShopPanel(gameLoop, renderer, dragManager);
         TowerControlPanel upgradeButton = new TowerControlPanel(gameLoop);
 
-        // ИСПРАВЛЕНО: Передаем exitToMenuAction в оба окна, чтобы из любого конца сессии можно было выйти в меню
+
         GameOverWindow gameOverWindow = new GameOverWindow(gameLoop, restartAction);
         VictoryWindow victoryWindow = new VictoryWindow(gameLoop, restartAction, exitToMenuAction);
 
