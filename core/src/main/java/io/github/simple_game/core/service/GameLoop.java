@@ -42,7 +42,7 @@ public class GameLoop {
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
 
         //  Лимит сессии. Если 20 волна успешно зачищена и врагов на карте нет — ПОБЕДА!
-        if (waveManager.getCurrentWaveNumber() == 20 && !waveManager.isWaveActive() && entityManager.getEnemies().size == 0) {
+        if (waveManager.getCurrentWaveNumber() == 1 && !waveManager.isWaveActive() && entityManager.getEnemies().size == 0) {
             this.isVictory = true;
             System.out.println("🏆 СЕССИЯ ЗАВЕРШЕНА! ВЫ ОДОЛЕЛИ ВСЕ 20 ВОЛН!");
         }

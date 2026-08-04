@@ -1,6 +1,7 @@
 package io.github.simple_game.core.presentation.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen; // ИСПРАВЛЕНО: Импортируем базовый интерфейс Screen LibGDX
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,20 +19,24 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.model.entity.items.Item;
 import io.github.simple_game.core.service.GameLoop;
 
 public class InventoryScreen extends ScreenAdapter {
-    private final Main game; private final GameScreen gameScreen; private final GameLoop gameLoop;
+    private final Main game;
+    private final Screen previousScreen; // ИСПРАВЛЕНО: Теперь храним любой родительский экран (меню или бой)
+    private final GameLoop gameLoop;
     private final Stage stage; private final Texture btnBg, slotBg, activeBg;
     private Label descLabel;
 
-    public InventoryScreen(Main game, GameScreen gameScreen, GameLoop gameLoop) {
-        this.game = game; this.gameScreen = gameScreen; this.gameLoop = gameLoop;
+    // ИСПРАВЛЕНО: Конструктор теперь принимает общий тип Screen вместо жесткого GameScreen
+    public InventoryScreen(Main game, Screen previousScreen, GameLoop gameLoop) {
+        this.game = game;
+        this.previousScreen = previousScreen;
+        this.gameLoop = gameLoop;
 
-        // ИСПРАВЛЕНО: Заменили ScreenViewport на ExtendViewport с виртуальным разрешением 480x800.
-        // Теперь LibGDX сам крупно масштабирует UI на смартфонах с высоким разрешением (FullHD/4K).
         OrthographicCamera uiCamera = new OrthographicCamera();
         this.stage = new Stage(new ExtendViewport(480, 800, uiCamera));
 
@@ -48,8 +53,6 @@ public class InventoryScreen extends ScreenAdapter {
         var inv = this.gameLoop.getInventoryManager();
         DragAndDrop dad = new DragAndDrop();
 
-        // ИСПРАВЛЕНО: Убрали переменную scale! Поскольку ExtendViewport сам увеличивает сцену,
-        // мы возвращаем фиксированные удобные размеры шрифтов и кнопок для виртуального экрана 480x800.
         Label.LabelStyle textStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE); textStyle.font.getData().setScale(1.4f);
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle(); btnStyle.font = new BitmapFont(); btnStyle.font.getData().setScale(1.8f); btnStyle.fontColor = Color.WHITE; btnStyle.up = new TextureRegionDrawable(btnBg);
         TextButton.TextButtonStyle slotStyle = new TextButton.TextButtonStyle(); slotStyle.font = new BitmapFont(); slotStyle.font.getData().setScale(1.3f); slotStyle.fontColor = Color.GOLD; slotStyle.up = new TextureRegionDrawable(slotBg);
@@ -114,17 +117,18 @@ public class InventoryScreen extends ScreenAdapter {
         descLabel.setColor(Color.LIGHT_GRAY); descLabel.setAlignment(com.badlogic.gdx.utils.Align.center);
         mainTable.add(descLabel).width(440).height(75).padBottom(10).row();
 
-        TextButton backBtn = new TextButton(" RETURN TO GAME ", btnStyle);
+        TextButton backBtn = new TextButton(" RETURN ", btnStyle);
         backBtn.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent e, float x, float y) { game.setScreen(gameScreen); }
+            @Override public void clicked(InputEvent e, float x, float y) {
+                if (previousScreen != null) {
+                    game.setScreen(previousScreen);
+                }
+            }
         });
         mainTable.add(backBtn).size(300, 55); stage.addActor(mainTable);
     }
 
     @Override public void render(float d) { Gdx.gl.glClearColor(0.1f, 0.1f, 0.12f, 1f); Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); stage.act(d); stage.draw(); }
-
-    // ИСПРАВЛЕНО: Передаем true в метод обновления вьюпорта сцены, чтобы камера инвентаря правильно центрировалась
     @Override public void resize(int w, int h) { stage.getViewport().update(w, h, true); }
-
     @Override public void dispose() { stage.dispose(); btnBg.dispose(); slotBg.dispose(); activeBg.dispose(); }
 }

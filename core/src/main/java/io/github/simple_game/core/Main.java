@@ -1,26 +1,23 @@
 package io.github.simple_game.core;
 
 import com.badlogic.gdx.Game;
-import io.github.simple_game.core.presentation.screen.GameScreen;
-import io.github.simple_game.core.service.InventoryManager; // Наш менеджер рюкзака
+import io.github.simple_game.core.presentation.screen.MainMenuScreen; // Импортируем меню
+import io.github.simple_game.core.service.GameLoop;
+import io.github.simple_game.core.service.InventoryManager;
 
 public class Main extends Game {
-    // ВАЖНО: Делаем инвентарь глобальным полем игрового процесса
     private InventoryManager globalInventory;
+    private GameLoop temporaryLoop; // Временный цикл для чтения шмоток из меню
 
     @Override
     public void create() {
-        // Инициализируем рюкзак строго ОДИН РАЗ за всё время жизни приложения
         this.globalInventory = new InventoryManager();
+        this.temporaryLoop = new GameLoop(this); // Инициализируем контейнер для инвентаря
 
-        // Передаем экран игры дальше
-        setScreen(new GameScreen(this));
+        // ИСПРАВЛЕНО: Теперь при старте приложения открывается ГЛАВНОЕ МЕНЮ!
+        setScreen(new MainMenuScreen(this));
     }
 
-    /**
-     * @return ссылка на персистентный рюкзак, который никогда не сбрасывается между сессиями
-     */
-    public InventoryManager getGlobalInventory() {
-        return globalInventory;
-    }
+    public InventoryManager getGlobalInventory() { return globalInventory; }
+    public GameLoop getGlobalInventoryGameLoop() { return temporaryLoop; }
 }

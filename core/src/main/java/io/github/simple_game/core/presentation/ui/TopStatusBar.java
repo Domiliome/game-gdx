@@ -12,9 +12,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.presentation.screen.GameScreen;
-import io.github.simple_game.core.presentation.screen.InventoryScreen;
 import io.github.simple_game.core.service.CurrencyManager;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.WaveManager;
@@ -63,8 +63,8 @@ public class TopStatusBar extends Table {
         bagButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // При тапе открываем новый независимый экран рюкзака
-                game.setScreen(new InventoryScreen(game, gameScreen, TopStatusBar.this.gameLoop));
+                game.setScreen(new io.github.simple_game.core.presentation.screen.InventoryScreen(game, gameScreen, TopStatusBar.this.gameLoop));
+
             }
         });
 

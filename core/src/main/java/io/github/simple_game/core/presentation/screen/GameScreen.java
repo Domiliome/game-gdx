@@ -9,15 +9,14 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
 import io.github.simple_game.core.Main;
-import io.github.simple_game.core.model.movement.PathGenerator;
 import io.github.simple_game.core.model.movement.PathType;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
-import io.github.simple_game.core.service.InteractionService; // Правильный импорт генератора
+import io.github.simple_game.core.service.InteractionService;
+import io.github.simple_game.core.model.movement.PathGenerator; // ИСПРАВЛЕНО: Правильный сервисный импорт
 
 public class GameScreen extends ScreenAdapter {
     private final Main game;
@@ -52,6 +51,7 @@ public class GameScreen extends ScreenAdapter {
             cameraGestureService = new CameraGestureService(worldViewport);
             gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
+            // ИСПРАВЛЕНО: Передаем две лямбды (перезапуск сессии и выход в главное меню)
             gameInterface = new GameInterface(
                 gameLoop, uiViewport, gameRenderer,
                 interactionService.getDragAndDropManager(), game, this,
@@ -59,10 +59,9 @@ public class GameScreen extends ScreenAdapter {
                     gameLoop = null;
                     show();
                     resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-                }
+                },
+                () -> game.setScreen(new MainMenuScreen(game)) // Лямбда закрытия сессии и ухода в меню
             );
-
-
 
             PathType[] types = PathType.values();
             this.activeMapType = types[com.badlogic.gdx.math.MathUtils.random(0, types.length - 1)];

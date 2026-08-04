@@ -18,9 +18,9 @@ public class GameInterface {
     private final Stage stage;
     private final TopStatusBar statusBar;
 
-    // Добавлен параметр Runnable restartAction для сброса сессии окнами конца игры
-    public GameInterface(GameLoop gameLoop, Viewport uiViewport, GameRenderer renderer,
-                         DragAndDropManager dragManager, Main game, GameScreen gameScreen, Runnable restartAction) {
+    // ИСПРАВЛЕНО: Добавлен параметр Runnable exitToMenuAction для возврата на главный экран
+    public GameInterface(GameLoop gameLoop, Viewport uiViewport, GameRenderer renderer, DragAndDropManager dragManager,
+                         Main game, GameScreen gameScreen, Runnable restartAction, Runnable exitToMenuAction) {
         this.stage = new Stage(uiViewport);
 
         Table rootTable = new Table();
@@ -30,9 +30,9 @@ public class GameInterface {
         ShopPanel shopPanel = new ShopPanel(gameLoop, renderer, dragManager);
         TowerControlPanel upgradeButton = new TowerControlPanel(gameLoop);
 
-        // Создаем оба окна конца игры, передавая им одну и ту же логику перезапуска
+        // ИСПРАВЛЕНО: Передаем exitToMenuAction в оба окна, чтобы из любого конца сессии можно было выйти в меню
         GameOverWindow gameOverWindow = new GameOverWindow(gameLoop, restartAction);
-        VictoryWindow victoryWindow = new VictoryWindow(gameLoop, restartAction);
+        VictoryWindow victoryWindow = new VictoryWindow(gameLoop, restartAction, exitToMenuAction);
 
         rootTable.add(statusBar).expandX().left().top().pad(20);
         rootTable.row();
@@ -42,7 +42,6 @@ public class GameInterface {
 
         this.stage.addActor(rootTable);
 
-        // Добавляем окна оверлеями на весь экран поверх основной верстки интерфейса
         gameOverWindow.setFillParent(true);
         this.stage.addActor(gameOverWindow);
 
