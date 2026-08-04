@@ -14,7 +14,6 @@ public class InventoryManager {
     private final Array<Item> backpack = new Array<>();
     private final Array<Item> lootTable = new Array<>();
 
-    // ВАЖНО: Массив активных гнёзд (максимум 3 слота экипировки)
     private final Array<Item> equippedSlots = new Array<>(3);
 
     public InventoryManager() {
@@ -39,7 +38,7 @@ public class InventoryManager {
     }
 
 
-    // Экипировать предмет из рюкзака в активное гнездо
+
     public boolean equipItem(Item item) {
         if (equippedSlots.size < 3 && backpack.removeValue(item, true)) {
             equippedSlots.add(item);
@@ -48,7 +47,7 @@ public class InventoryManager {
         return false;
     }
 
-    // Снять предмет из активного гнезда обратно в рюкзак
+
     public void unequipItem(Item item) {
         if (equippedSlots.removeValue(item, true)) {
             backpack.add(item);

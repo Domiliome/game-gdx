@@ -1,6 +1,7 @@
 package io.github.simple_game.core.model.entity.projectile;
 
 import com.badlogic.gdx.math.Vector2;
+
 import io.github.simple_game.core.model.entity.Entity;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.tower.TowerType;
@@ -12,7 +13,7 @@ public class Projectile extends Entity {
     protected final float speed;
     protected boolean active = true;
 
-    // ВАЖНО: Добавили вектор для запоминания последней известной точки врага
+
     private final Vector2 lastTargetPos = new Vector2();
 
     public Projectile(float x, float y, Enemy target, float damage, TowerType towerType) {
@@ -39,8 +40,7 @@ public class Projectile extends Entity {
             lastTargetPos.set(target.getPosition());
         }
 
-        // 2. ИСПРАВЛЕНО: Снаряд больше не растворяется сразу в воздухе!
-        // Если цель умерла, мы выбираем точкой назначения её последнюю позицию на дороге
+
         Vector2 currentDestination = (target != null && target.isActive())
                 ? target.getPosition()
                 : lastTargetPos;
@@ -52,11 +52,11 @@ public class Projectile extends Entity {
         if (step >= distance) {
             position.set(currentDestination);
 
-            // Если в момент прилета цель ВСЁ ЕЩЕ ЖИВА — наносим урон
+
             if (target != null && target.isActive()) {
                 hitTarget(economy);
             } else {
-                active = false; // Если цель уже мертва — снаряд просто тухнет в точке падения
+                active = false;
             }
         } else {
             direction.nor().scl(step);

@@ -48,7 +48,6 @@ public class CannonBall extends Projectile {
         float explosionX = position.x;
         float explosionY = position.y;
 
-        System.out.println("Бум! Ядро пушки взорвалось в точке (" + explosionX + ", " + explosionY + ")");
 
         // Получаем массив всех активных врагов, находящихся сейчас на карте
         Array<Enemy> allEnemies = gameLoop.getEnemies();
@@ -63,7 +62,7 @@ public class CannonBall extends Projectile {
             // Если враг находится внутри взрывной волны — наносим урон
             if (distanceToExplosion <= BLAST_RADIUS) {
                 currentEnemy.takeDamage(damage, economy);
-                System.out.println(" -> Враг в радиусе взрыва задет! Нанесено урона: " + damage);
+
             }
         }
     }

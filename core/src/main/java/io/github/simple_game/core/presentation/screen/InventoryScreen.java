@@ -26,12 +26,11 @@ import io.github.simple_game.core.service.GameLoop;
 
 public class InventoryScreen extends ScreenAdapter {
     private final Main game;
-    private final Screen previousScreen; // ИСПРАВЛЕНО: Теперь храним любой родительский экран (меню или бой)
+    private final Screen previousScreen;
     private final GameLoop gameLoop;
     private final Stage stage; private final Texture btnBg, slotBg, activeBg;
     private Label descLabel;
 
-    // ИСПРАВЛЕНО: Конструктор теперь принимает общий тип Screen вместо жесткого GameScreen
     public InventoryScreen(Main game, Screen previousScreen, GameLoop gameLoop) {
         this.game = game;
         this.previousScreen = previousScreen;
