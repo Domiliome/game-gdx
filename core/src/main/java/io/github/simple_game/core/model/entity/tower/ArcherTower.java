@@ -1,50 +1,44 @@
 package io.github.simple_game.core.model.entity.tower;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
 import io.github.simple_game.core.model.entity.projectile.Arrow;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
 import io.github.simple_game.core.service.GameLoop;
-/**
- * Башня лучников. Обладает высокой скоростью атаки и сбалансированным уроном.
- * Полностью контролирует свои боевые характеристики, формулы улучшений
- * и рассчитывает шанс нанесения критического удара при выстреле.
- */
-public class ArcherTower extends Tower {
 
-    // Стартовые базовые параметры лучника на первом уровне
+public class ArcherTower extends Tower {
     private static final float BASE_DAMAGE = 15f;
     private static final float BASE_RANGE = 150f;
     private static final float BASE_COOLDOWN = 0.6f;
+    private final float damageMultiplier = 1.15f;
+    private final float rangeMultiplier = 1.05f;
+    private final float cooldownReduction = 0.90f;
+    private float critChance = 0.20f;
+    private final float critDamageMultiplier = 2.0f;
 
-    // Уникальные коэффициенты прокачки только для Башни лучников
-    private final float damageMultiplier = 1.15f;  // +15% урона за каждый уровень
-    private final float rangeMultiplier = 1.05f;   // +5% радиуса за уровень (небольшой прирост дальности)
-    private final float cooldownReduction = 0.90f; // Сильное ускорение атаки (-10% кулдауна за уровень)
-
-    // Параметры механики критического удара
-    private float critChance = 0.20f;                // Стартовый шанс критического удара (20%)
-    private final float critDamageMultiplier = 2.0f; // Множитель критического урона (x2)
-
-    /**
-     * Создает новую башню лучников в заданных координатах.
-     *
-     * @param x        координата X для установки башни на карте
-     * @param y        координата Y для установки башни на карте
-     * @param gameLoop актуальная ссылка на игровой цикл для передачи контекста окружения
-     */
     public ArcherTower(float x, float y, GameLoop gameLoop) {
         super(x, y, TowerType.ARCHER, gameLoop);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
+
+        Texture sheet = new Texture(Gdx.files.internal("tower_archer_init.png"));
+        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
+
+        int totalFrames = tmp[0].length;
+        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
+
+        // ИСПРАВЛЕНО: Заменили ручной цикл for на быстрый системный arraycopy, чтобы полностью убрать ворнинг "Manual array copy"
+        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
+
+        // ИСПРАВЛЕНО: Убрали избыточный тип данных в выражении создания объекта, заменив его на алмазный оператор <>
+        this.initAnimation = new Animation<>(0.06f, animationFrames);
     }
 
-    /**
-     * Повышает уровень башни лучников до максимального предела.
-     * Пересчитывает боевые характеристики по уникальным формулам скорострельности,
-     * а также плавно увеличивает шанс нанесения критического удара на 5% за уровень.
-     */
     @Override
     public void tryUpgrade() {
         if (currentLevel < maxLevel) {
@@ -53,47 +47,31 @@ public class ArcherTower extends Tower {
             this.attackRange = BASE_RANGE * (float) Math.pow(rangeMultiplier, currentLevel - 1);
             this.attackCooldown = Math.max(0.1f, BASE_COOLDOWN * (float) Math.pow(cooldownReduction, currentLevel - 1));
 
-            // Шанс критического удара растет с каждым уровнем (20% -> 25% -> 30% -> 35% -> 40%)
-            this.critChance = 0.20f + (currentLevel - 1) * 0.05f;
+            this.baseDamage = this.damage;
+            this.baseAttackRange = this.attackRange;
+            this.baseAttackCooldown = this.attackCooldown;
 
-            System.out.println("Башня лучников улучшена до уровня " + currentLevel + "! Шанс крита: " + (critChance * 100) + "%");
+            this.critChance = 0.20f + (currentLevel - 1) * 0.05f;
+            System.out.println("Башня улучшена до уровня " + currentLevel);
         }
     }
 
-    /**
-     * Возвращает стоимость улучшения для башни лучников.
-     * Лучник имеет самую бюджетную стоимость апгрейда среди всех защитных сооружений.
-     *
-     * @return стоимость улучшения в золотых монетах
-     */
     @Override
     public int getUpgradeCost() {
         return (int) (type.getCost() * 0.5f * currentLevel);
     }
 
-    /**
-     * Производит выстрел по текущей установленной цели.
-     * Рассчитывает вероятность критического удара. В случае успеха наносит цели
-     * двойной урон и генерирует специализированный снаряд {@link Arrow} с флагом крита.
-     *
-     * @param projectilesToSpawn буферный список для добавления нового снаряда в игровой мир
-     */
     @Override
     protected void shoot(Array<Projectile> projectilesToSpawn) {
-        // Бросаем случайное значение от 0.0 до 1.0 для проверки вероятности крита
         boolean isCrit = Math.random() < critChance;
-
-        // Накладываем множитель урона, если крит сработал
         float finalDamage = isCrit ? this.damage * critDamageMultiplier : this.damage;
-
-        // Создаем специализированный снаряд стрелы
         Projectile arrow = new Arrow(position.x, position.y, target, finalDamage, type, isCrit);
         projectilesToSpawn.add(arrow);
-
-        if (isCrit) {
-            System.out.println("🔥 КРИТИЧЕСКИЙ ВЫСТРЕЛ! Стрела нанесет: " + finalDamage + " ед. урона");
-        } else {
-            System.out.println("Лучник выпустил стрелу с уроном " + finalDamage);
-        }
     }
+
+    public TextureRegion getCurrentInitFrame() {
+        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
+    }
+
+    public boolean isInitializing() { return isInitializing; }
 }

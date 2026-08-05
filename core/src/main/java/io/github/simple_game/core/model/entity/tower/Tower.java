@@ -27,6 +27,11 @@ public abstract class Tower extends Entity {
 
     protected Enemy target;
 
+    // ВНЕДРЕНО: Поля для поддержки покадровой анимации появления башни
+    protected com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> initAnimation;
+    protected float animationTime = 0f;
+    protected boolean isInitializing = true; // Изначально башня всегда строится
+
     public Tower(float x, float y, TowerType type, GameLoop gameLoop) {
         super(x, y);
         this.type = type;
@@ -37,19 +42,29 @@ public abstract class Tower extends Entity {
     public abstract int getUpgradeCost();
     protected abstract void shoot(Array<Projectile> projectilesToSpawn);
 
-    public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
-
+        public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
+        // 1. СИНХРОНИЗАЦИЯ (ПЕРЕНЕСЕНО НА САМЫЙ ВЕРХ):
+        // Записываем базовые характеристики башни строго ДО прерывания метода!
         if (baseDamage == 0 && damage > 0) {
             baseDamage = damage;
             baseAttackRange = attackRange;
             baseAttackCooldown = attackCooldown;
         }
 
+        // 2. БЛОКИРОВКА АНИМАЦИИ ПОЯВЛЕНИЯ:
+        // Теперь отсчет кадров идет плавно, не затирая внутренние переменные нулями
+        if (isInitializing) {
+            animationTime += deltaTime;
+            if (initAnimation != null && initAnimation.isAnimationFinished(animationTime)) {
+                isInitializing = false; // Строительство завершено!
+            }
+            return; // Безопасно выходим, анимация больше не будет дёргаться!
+        }
 
+        // 3. Ежекадровый сброс параметров под динамические шмотки (работает после постройки)
         this.damage = baseDamage;
         this.attackRange = baseAttackRange;
         this.attackCooldown = baseAttackCooldown;
-
 
         for (Item item : gameLoop.getInventoryManager().getEquippedSlots()) {
             item.applyEffect(this);

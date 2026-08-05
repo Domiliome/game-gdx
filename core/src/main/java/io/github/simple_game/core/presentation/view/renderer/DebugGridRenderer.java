@@ -16,16 +16,10 @@ public class DebugGridRenderer {
         this.gameLoop = gameLoop;
     }
 
-    public void render(ShapeRenderer shapeRenderer, float worldHeight, boolean isDragging) {
-        if (isDragging) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            shapeRenderer.setColor(new Color(0.4f, 0.4f, 0.4f, 1f));
-            for (int x = 0; x <= 480; x += CELL_SIZE) shapeRenderer.line(x, 0, x, worldHeight);
-            for (int y = 0; y <= worldHeight; y += CELL_SIZE) shapeRenderer.line(0, y, 480, y);
-            shapeRenderer.end();
-        }
-
-
+    /**
+     * СЛОЙ 2: Рисует серый процедурный путь под башнями.
+     */
+    public void renderRoad(ShapeRenderer shapeRenderer) {
         RoadPath path = gameLoop.getRoadPath();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0.35f, 0.35f, 0.35f, 1f));
@@ -33,7 +27,6 @@ public class DebugGridRenderer {
         for (int i = 0; i < path.getPointCount() - 1; i++) {
             Vector2 p1 = path.getPoint(i);
             Vector2 p2 = path.getPoint(i + 1);
-
 
             float minX = Math.min(p1.x, p2.x) - 16f;
             float minY = Math.min(p1.y, p2.y) - 16f;
@@ -44,7 +37,19 @@ public class DebugGridRenderer {
             shapeRenderer.rect(minX, minY, width, height);
         }
         shapeRenderer.end();
+    }
 
+    /**
+     * СЛОЙ 4: Отрисовывает сетку застройки и радиус атаки поверх башен.
+     */
+    public void renderGridAndRadius(ShapeRenderer shapeRenderer, float worldHeight, boolean isDragging) {
+        if (isDragging) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(new Color(0.4f, 0.4f, 0.4f, 1f));
+            for (int x = 0; x <= 480; x += CELL_SIZE) shapeRenderer.line(x, 0, x, worldHeight);
+            for (int y = 0; y <= worldHeight; y += CELL_SIZE) shapeRenderer.line(0, y, 480, y);
+            shapeRenderer.end();
+        }
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(new Color(1, 1, 1, 0.2f));
