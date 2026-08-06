@@ -38,7 +38,6 @@ public class MagicTower extends Tower {
             currentLevel++;
             this.damage = BASE_DAMAGE * currentLevel;
             this.attackRange = BASE_RANGE + (currentLevel - 1) * 15f;
-
             this.baseDamage = this.damage;
             this.baseAttackRange = this.attackRange;
             this.baseAttackCooldown = this.attackCooldown;

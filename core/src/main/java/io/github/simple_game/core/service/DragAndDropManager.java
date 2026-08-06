@@ -43,7 +43,6 @@ public class DragAndDropManager {
     public void stopDragAndPlace() {
         if (!isDragging) return;
         isDragging = false;
-
         float snappedX = MathUtils.floor(currentX / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         float snappedY = MathUtils.floor(currentY / CELL_SIZE) * CELL_SIZE + (CELL_SIZE / 2f);
         CurrencyManager economy = gameLoop.getCurrencyManager();
@@ -73,7 +72,6 @@ public class DragAndDropManager {
         }
         shapeRenderer.rect(snappedX - (CELL_SIZE / 2f), snappedY - (CELL_SIZE / 2f), CELL_SIZE, CELL_SIZE);
         shapeRenderer.end();
-
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(new Color(1, 1, 1, 0.3f));
         shapeRenderer.circle(snappedX, snappedY, previewTower.getAttackRange());
