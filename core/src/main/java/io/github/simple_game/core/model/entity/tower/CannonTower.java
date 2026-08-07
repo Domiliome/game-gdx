@@ -1,9 +1,14 @@
 package io.github.simple_game.core.model.entity.tower;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
-import io.github.simple_game.core.service.GameLoop;
-import io.github.simple_game.core.model.entity.projectile.Projectile;
+
 import io.github.simple_game.core.model.entity.projectile.CannonBall;
+import io.github.simple_game.core.model.entity.projectile.Projectile;
+import io.github.simple_game.core.service.GameLoop;
 
 /**
  * Артиллерийская пушка. Обладает сокрушительным разовым уроном.
@@ -24,22 +29,30 @@ public class CannonTower extends Tower {
 
     /**
      * Создает новую артиллерийскую башню в заданных координатах.
-     *
-     * @param x        координата X для установки башни на карте
-     * @param y        координата Y для установки башни на карте
-     * @param gameLoop актуальная ссылка на игровой цикл для передачи контекста снарядам
      */
     public CannonTower(float x, float y, GameLoop gameLoop) {
         super(x, y, TowerType.CANNON, gameLoop);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
+
+        // ВНЕДРЕНИЕ АНИМАЦИИ: Загружаем 12-кадровую ленту Horizontal Strip для пушки
+        Texture sheet = new Texture(Gdx.files.internal("tower_cannon_init.png"));
+        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
+
+        // Автоматически считываем длину горизонтального ряда кадров
+        int totalFrames = tmp[0].length;
+        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
+
+        // ИСПРАВЛЕНО: Заменили ручной цикл копирования на системный arraycopy. Предупреждение исчезнет!
+        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
+
+        // ИСПРАВЛЕНО: Убрали избыточный тип данных в выражении new, применив оператор-алмаз <>
+        this.initAnimation = new Animation<>(0.06f, animationFrames);
     }
 
     /**
-     * Повышает уровень артиллерийской башни до максимального предела.
-     * Пересчитывает боевые характеристики (урон и радиус) на основе локальных
-     * констант прогрессии.
+     * Повышает уровень артиллерийской башни до maximal предела.
      */
     @Override
     public void tryUpgrade() {
@@ -48,14 +61,18 @@ public class CannonTower extends Tower {
             this.damage = BASE_DAMAGE * (float) Math.pow(damageMultiplier, currentLevel - 1);
             this.attackRange = BASE_RANGE * (float) Math.pow(rangeMultiplier, currentLevel - 1);
             this.attackCooldown = Math.max(0.1f, BASE_COOLDOWN * (float) Math.pow(cooldownReduction, currentLevel - 1));
+
+            // Синхронизируем базовые характеристики для баффов от предметов из рюкзака
+            this.baseDamage = this.damage;
+            this.baseAttackRange = this.attackRange;
+            this.baseAttackCooldown = this.attackCooldown;
+
             System.out.println("Пушка улучшена до уровня " + currentLevel);
         }
     }
 
     /**
      * Возвращает стоимость улучшения для артиллерийской башни.
-     *
-     * @return стоимость улучшения в золотых монетах
      */
     @Override
     public int getUpgradeCost() {
@@ -64,16 +81,21 @@ public class CannonTower extends Tower {
 
     /**
      * Производит выстрел по текущей установленной цели.
-     * Создает экземпляр специализированного артиллерийского снаряда {@link CannonBall},
-     * который при столкновении наносит урон всем целям в радиусе взрыва.
-     *
-     * @param projectilesToSpawn буферный список для добавления нового снаряда в игровой мир
      */
     @Override
     protected void shoot(Array<Projectile> projectilesToSpawn) {
-        // Спавним специализированное тяжелое ядро пушки, передавая в него игровой цикл
+        // Спавним специализированное тяжелое ядро пушки, передавая в него игровой цикл для Splash-урона
         Projectile cannonBall = new CannonBall(position.x, position.y, target, damage, type, gameLoop);
         projectilesToSpawn.add(cannonBall);
         System.out.println("Пушка бабахнула! Нанесено " + damage + " ед. урона по площади");
+    }
+
+    // Универсальные геттеры для вызова внутри WorldSpriteRenderer
+    public TextureRegion getCurrentInitFrame() {
+        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
+    }
+
+    public boolean isInitializing() {
+        return isInitializing;
     }
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import io.github.simple_game.core.model.entity.tower.ArcherTower;
+import io.github.simple_game.core.model.entity.tower.CannonTower;
 import io.github.simple_game.core.model.entity.tower.MagicTower;
 import io.github.simple_game.core.model.entity.tower.Tower;
 import io.github.simple_game.core.model.entity.tower.TowerType;
@@ -38,11 +39,7 @@ public class WorldSpriteRenderer {
         batch.draw(mapTexture, 0, 0, 480, worldHeight);
     }
 
-    /**
-     * ШАГ 3: Отрисовывает башни и их покадровые анимации постройки.
-     * Вызывается ПОВЕРХ процедурной серой дороги.
-     */
-    // Находим метод renderTowers внутри WorldSpriteRenderer.java и добавляем туда блок мага:
+
     public void renderTowers(SpriteBatch batch) {
         for (Tower tower : gameLoop.getTowers()) {
             float drawX = tower.getPosition().x - (CELL_SIZE / 2f);
@@ -60,22 +57,37 @@ public class WorldSpriteRenderer {
                 }
             }
 
+            // 2. АНИМАЦИЯ МАГА
             if (tower.getType() == TowerType.MAGIC && tower instanceof MagicTower) {
                 MagicTower magic = (MagicTower) tower;
                 if (magic.isInitializing()) {
                     TextureRegion currentFrame = magic.getCurrentInitFrame();
                     if (currentFrame != null) {
                         batch.draw(currentFrame, drawX, drawY, CELL_SIZE, CELL_SIZE);
-                        continue; // Пропускаем статичный спрайт, пока идет стройка
+                        continue;
                     }
                 }
             }
-            // ----------------------------------------
+
+            // --- ДОБАВЬТЕ ЭТОТ ФИНАЛЬНЫЙ БЛОК ДЛЯ ПУШКИ СЮДА ---
+            // 3. АНИМАЦИЯ ПУШКИ
+            if (tower.getType() == TowerType.CANNON && tower instanceof CannonTower) {
+                CannonTower cannon = (CannonTower) tower;
+                if (cannon.isInitializing()) {
+                    TextureRegion currentFrame = cannon.getCurrentInitFrame();
+                    if (currentFrame != null) {
+                        batch.draw(currentFrame, drawX, drawY, CELL_SIZE, CELL_SIZE);
+                        continue; // Пропускаем статичный спрайт готовой пушки
+                    }
+                }
+            }
+            // ---------------------------------------------------
 
             // Статичная отрисовка любой готовой башни (размер 64х64)
             batch.draw(getTexture(tower.getType()), drawX, drawY, CELL_SIZE, CELL_SIZE);
         }
     }
+
 
     public Texture getTexture(TowerType type) {
         return switch (type) {
