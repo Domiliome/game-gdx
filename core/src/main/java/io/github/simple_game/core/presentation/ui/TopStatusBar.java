@@ -25,7 +25,6 @@ public class TopStatusBar extends Table {
     private final TextButton startButton, bagButton;
     private final Texture btnBg;
 
-    // Конструктор теперь принимает Main и GameScreen для переключения экранов
     public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
         this.gameLoop = gameLoop;
 
@@ -58,7 +57,6 @@ public class TopStatusBar extends Table {
             }
         });
 
-        // Создаем кнопку инвентаря с таким же адаптивным стилем
         bagButton = new TextButton(" BAG ", btnStyle);
         bagButton.addListener(new ClickListener() {
             @Override
@@ -77,7 +75,6 @@ public class TopStatusBar extends Table {
         this.left().top();
         this.add(textTable).expandX().left();
 
-        // Размещаем кнопку BAG слева от кнопки СТАРТ и масштабируем под ПК/Android
         this.add(bagButton).right().size(120 * scale, 60 * scale).padRight(10 * scale);
         this.add(startButton).right().size(160 * scale, 60 * scale).padRight(20 * scale);
     }
