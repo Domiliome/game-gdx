@@ -17,7 +17,6 @@ public class VictoryWindow extends Table {
     private final GameLoop gameLoop;
     private final Texture bgTexture;
 
-    // ИСПРАВЛЕНО: Добавлен параметр exitToMenuAction для обработки выхода в главное меню
     public VictoryWindow(GameLoop gameLoop, final Runnable restartAction, final Runnable exitToMenuAction) {
         this.gameLoop = gameLoop;
 
@@ -50,9 +49,8 @@ public class VictoryWindow extends Table {
             }
         });
 
-        // ИСПРАВЛЕНО: Создаем кнопку MAIN MENU
         TextButton menuBtn = new TextButton(" MAIN MENU ", btnStyle);
-        menuBtn.getLabel().getStyle().fontColor = Color.WHITE; // Делаем цвет текста кнопки меню белым для отличия
+        menuBtn.getLabel().getStyle().fontColor = Color.WHITE;
         menuBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -63,8 +61,8 @@ public class VictoryWindow extends Table {
         this.center();
         this.add(titleLabel).padBottom(25).row();
         this.add(descLabel).padBottom(40).row();
-        this.add(restartBtn).size(300, 65).padBottom(15).row(); // Кнопка перезапуска
-        this.add(menuBtn).size(300, 65); // ИСПРАВЛЕНО: Добавили кнопку меню в верстку
+        this.add(restartBtn).size(300, 65).padBottom(15).row();
+        this.add(menuBtn).size(300, 65);
         this.setVisible(false);
     }
 
