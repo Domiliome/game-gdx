@@ -29,7 +29,6 @@ public class ShopPanel extends Table {
         this.gameLoop = gameLoop;
         this.dragManager = dragManager;
 
-        // Определяем платформу (2.0f для Android, 1.0f для десктопа)
         this.scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -49,7 +48,6 @@ public class ShopPanel extends Table {
         Table slot3 = createShopSlot(new Image(renderer.getMagicTowerTexture()),  priceLabel3, TowerType.MAGIC);
 
         this.bottom().center();
-        // Адаптивные отступы (10/15 пикселей для ПК, 20/30 для Android)
         this.add(slot1).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
         this.add(slot2).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
         this.add(slot3).expandX().fillY().padTop(10 * scale).padBottom(15 * scale);
@@ -57,9 +55,9 @@ public class ShopPanel extends Table {
 
     private Table createShopSlot(Image towerImage, Label priceLabel, final TowerType towerType) {
         Table slotTable = new Table();
-        priceLabel.getStyle().font.getData().setScale(1.2f * scale); // 1.2f на ПК, 2.4f на телефоне
+        priceLabel.getStyle().font.getData().setScale(1.2f * scale);
 
-        // Адаптивный размер иконок (64x64 на ПК, 128x128 на Android)
+
         slotTable.add(towerImage).size(64 * scale, 64 * scale).padBottom(5 * scale);
         slotTable.row();
         slotTable.add(priceLabel);
