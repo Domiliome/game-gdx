@@ -64,8 +64,7 @@ public class MainMenuScreen extends ScreenAdapter {
         bagBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // ИСПРАВЛЕНО: Передаем СЕБЯ (MainMenuScreen.this) вторым аргументом в InventoryScreen.
-                // Теперь полиморфная кнопка RETURN в инвентаре безошибочно вернет игрока назад в меню!
+
                 game.setScreen(new InventoryScreen(game, MainMenuScreen.this, game.getGlobalInventoryGameLoop()));
             }
         });

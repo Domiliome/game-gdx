@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.presentation.ui.BackpackGrid;
 import io.github.simple_game.core.presentation.ui.EquipmentPanel;
@@ -53,25 +54,25 @@ public class InventoryScreen extends ScreenAdapter {
 
         Table mainTable = new Table(); mainTable.setFillParent(true); mainTable.top().pad(10);
 
-        // ПОДКЛЮЧАЕМ НАШИ НОВЫЕ МОДУЛЬНЫЕ ФАЙЛЫ-ПАНЕЛИ В ОДИН РЯД
+
         Table topPanel = new Table();
         topPanel.add(new EquipmentPanel(inv, dad, slotStyle, actStyle, this::show)).padRight(20);
         topPanel.add(new ForgePanel(inv, dad, tStyle, slotStyle, fStyle, msg -> show())).row();
         mainTable.add(topPanel).padBottom(5).row();
 
-        // Кнопка крафта
+
         boolean canForge = (inv.getCraftResult() != null);
         TextButton forgeBtn = new TextButton("PRESS TO FORGE", btnStyle); forgeBtn.getLabel().getStyle().fontColor = canForge ? Color.ORANGE : Color.GRAY;
         forgeBtn.addListener(new ClickListener() { @Override public void clicked(InputEvent e, float x, float y) { if (inv.getCraftResult() != null) { boolean s = inv.forge(); descLabel.setText(s ? "🔥 SUCCESS!" : "💨 FAILED"); descLabel.setColor(s ? Color.GREEN : Color.RED); show(); } } });
         mainTable.add(forgeBtn).size(240, 42).padBottom(8).row();
 
-        // Подключаем модульную сетку рюкзака со скроллом
+
         mainTable.add(new Label("- BACKPACK -", tStyle)).padBottom(2).row();
         BackpackGrid backpackGrid = new BackpackGrid(inv, dad, tStyle, slotStyle, item -> { descLabel.setText(item.getName() + ": " + item.getDescription()); descLabel.setColor(Color.LIGHT_GRAY); });
         ScrollPane scrollPane = new ScrollPane(backpackGrid); scrollPane.setScrollingDisabled(true, false);
         mainTable.add(scrollPane).expand().fill().padBottom(5).row();
 
-        // Описание и кнопка выхода
+
         descLabel = new Label("Drag items to active [EQ] slots or orange [+] forge slots", tStyle); descLabel.setColor(Color.LIGHT_GRAY); descLabel.setAlignment(com.badlogic.gdx.utils.Align.center);
         mainTable.add(descLabel).width(440).height(40).padBottom(5).row();
         TextButton backBtn = new TextButton(" RETURN ", btnStyle); backBtn.addListener(new ClickListener() { @Override public void clicked(InputEvent e, float x, float y) { if (previousScreen != null) game.setScreen(previousScreen); } });
