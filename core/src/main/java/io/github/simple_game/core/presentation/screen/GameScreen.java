@@ -51,7 +51,6 @@ public class GameScreen extends ScreenAdapter {
             cameraGestureService = new CameraGestureService(worldViewport);
             gameRenderer = new GameRenderer(gameLoop, worldCamera, interactionService);
 
-            // ИСПРАВЛЕНО: Передаем две лямбды (перезапуск сессии и выход в главное меню)
             gameInterface = new GameInterface(
                 gameLoop, uiViewport, gameRenderer,
                 interactionService.getDragAndDropManager(), game, this,
