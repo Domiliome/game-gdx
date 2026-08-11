@@ -71,17 +71,32 @@ public class TopStatusBar extends Table {
         });
 
         Table textTable = new Table();
-        textTable.left();
+        textTable.left().top();
         textTable.add(waveLabel).left().padBottom(5 * scale).row();
         textTable.add(statusLabel).left().padBottom(5 * scale).row();
         textTable.add(economyLabel).left();
 
-        this.left().top();
-        this.add(textTable).expandX().left();
+        Table buttonTable = new Table();
+        buttonTable.right().top();
 
-        this.add(startButton).right().size(96f * scale, 96f * scale).padRight(10 * scale);
-        this.add(bagImage).right().size(96f * scale, 96f * scale).padRight(6f * scale);
+        // Рюкзак слева, старт/пауза справа с микро-отступом в 6 пикселей
+        buttonTable.add(startButton).size(96f * scale, 96f * scale);
+        buttonTable.add(bagImage).size(96f * scale, 96f * scale).padRight(6f * scale);
+
+
+        // ИСПРАВЛЕНО: Убрали опасный setFillParent.
+        // Жестко фиксируем ширину статус-бара под логическую ширину экрана (480 пикселей)
+        this.clearChildren();
+        this.setWidth(480f);
+        this.setHeight(110f * scale); // Задали достаточную высоту, чтобы крупные кнопки не обрезались
+
+        this.left().top().pad(10f * scale);
+
+        // Теперь expandX сработает идеально: растолкнет элементы на все 480 пикселей ширины!
+        this.add(textTable).expandX().left().top();
+        this.add(buttonTable).right().top();
     }
+
 
     @Override
     public void act(float delta) {
