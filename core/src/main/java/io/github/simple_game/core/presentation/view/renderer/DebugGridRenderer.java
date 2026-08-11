@@ -2,10 +2,8 @@ package io.github.simple_game.core.presentation.view.renderer;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
 
 import io.github.simple_game.core.model.entity.tower.Tower;
-import io.github.simple_game.core.model.movement.RoadPath;
 import io.github.simple_game.core.service.GameLoop;
 
 public class DebugGridRenderer {
@@ -17,30 +15,7 @@ public class DebugGridRenderer {
     }
 
     /**
-     * СЛОЙ 2: Рисует серый процедурный путь под башнями.
-     */
-    public void renderRoad(ShapeRenderer shapeRenderer) {
-        RoadPath path = gameLoop.getRoadPath();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(new Color(0.35f, 0.35f, 0.35f, 1f));
-
-        for (int i = 0; i < path.getPointCount() - 1; i++) {
-            Vector2 p1 = path.getPoint(i);
-            Vector2 p2 = path.getPoint(i + 1);
-
-            float minX = Math.min(p1.x, p2.x) - 16f;
-            float minY = Math.min(p1.y, p2.y) - 16f;
-
-            float width = (Float.compare(p1.x, p2.x) == 0) ? CELL_SIZE : Math.abs(p1.x - p2.x) + CELL_SIZE;
-            float height = (Float.compare(p1.y, p2.y) == 0) ? CELL_SIZE : Math.abs(p1.y - p2.y) + CELL_SIZE;
-
-            shapeRenderer.rect(minX, minY, width, height);
-        }
-        shapeRenderer.end();
-    }
-
-    /**
-     * СЛОЙ 4: Отрисовывает сетку застройки и радиус атаки поверх башен.
+     * Отрисовывает сетку застройки и радиус атаки поверх башен.
      */
     public void renderGridAndRadius(ShapeRenderer shapeRenderer, float worldHeight, boolean isDragging) {
         if (isDragging) {

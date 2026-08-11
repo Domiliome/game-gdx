@@ -52,8 +52,7 @@ public class GameRenderer {
         worldSpriteRenderer.renderBackground(batch, currentWorldHeight);
         batch.end();
 
-        // 2. СЛОЙ ДОРОГИ (ПОВЕРХ ТРАВЫ): Рисуем серый процедурный путь поверх коричневого фона
-        debugGridRenderer.renderRoad(shapeRenderer);
+
 
         // 3. СЛОЙ БАШЕН (ПОВЕРХ АСФАЛЬТА): Открываем батч заново и накрываем дорогу башнями 64х64!
         batch.begin();
