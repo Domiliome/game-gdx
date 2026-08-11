@@ -3,14 +3,13 @@ package io.github.simple_game.core.presentation.ui;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
@@ -23,18 +22,24 @@ import io.github.simple_game.core.service.WaveManager;
 public class TopStatusBar extends Table {
     private final GameLoop gameLoop;
     private final Label waveLabel, statusLabel, economyLabel;
-    private final TextButton startButton;
-    private final Image bagImage;
-    private final Texture btnBg;
-    private final Texture backpackTex;
+    private final Image startButton, bagImage;
+    private final Texture backpackTex, startTex, pauseTex;
+    private final TextureRegionDrawable startDrawable, pauseDrawable;
 
     public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
         this.gameLoop = gameLoop;
-
         float scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
 
         backpackTex = new Texture(Gdx.files.internal("backpack.png"));
+        startTex = new Texture(Gdx.files.internal("start.png"));
+        pauseTex = new Texture(Gdx.files.internal("pause.png"));
+
         backpackTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        startTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        pauseTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        this.startDrawable = new TextureRegionDrawable(new TextureRegion(startTex));
+        this.pauseDrawable = new TextureRegionDrawable(new TextureRegion(pauseTex));
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
         labelStyle.font.getData().setScale(1.5f * scale);
@@ -43,23 +48,17 @@ public class TopStatusBar extends Table {
         statusLabel = new Label("", labelStyle);
         economyLabel = new Label("", labelStyle);
 
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0.2f, 0.6f, 0.2f, 1f));
-        pixmap.fill();
-        this.btnBg = new Texture(pixmap);
-        pixmap.dispose();
-
-        TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
-        btnStyle.font = new BitmapFont();
-        btnStyle.font.getData().setScale(1.4f * scale);
-        btnStyle.fontColor = Color.WHITE;
-        btnStyle.up = new TextureRegionDrawable(btnBg);
-
-        startButton = new TextButton(" START ", btnStyle);
+        startButton = new Image(startDrawable);
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                TopStatusBar.this.gameLoop.getWaveManager().startNextWave();
+                WaveManager waveManager = TopStatusBar.this.gameLoop.getWaveManager();
+                if (!waveManager.isWaveActive()) {
+                    waveManager.startNextWave();
+                } else {
+                    boolean currentPauseState = TopStatusBar.this.gameLoop.isPaused();
+                    TopStatusBar.this.gameLoop.setPaused(!currentPauseState);
+                }
             }
         });
 
@@ -80,9 +79,8 @@ public class TopStatusBar extends Table {
         this.left().top();
         this.add(textTable).expandX().left();
 
-        // ИСПРАВЛЕНО: Базовый размер увеличен до 96 пикселей. Крупно, сочно и отлично нажимается!
-        this.add(bagImage).right().size(96f * scale, 96f * scale).padRight(20 * scale);
-        this.add(startButton).right().size(160 * scale, 60 * scale).padRight(20 * scale);
+        this.add(startButton).right().size(96f * scale, 96f * scale).padRight(10 * scale);
+        this.add(bagImage).right().size(96f * scale, 96f * scale).padRight(6f * scale);
     }
 
     @Override
@@ -96,18 +94,25 @@ public class TopStatusBar extends Table {
         economyLabel.setColor(Color.GREEN);
 
         if (waveManager.isWaveActive()) {
-            statusLabel.setText("Status: Battle!");
-            statusLabel.setColor(Color.RED);
-            startButton.setVisible(false);
+            if (gameLoop.isPaused()) {
+                statusLabel.setText("Status: Paused");
+                statusLabel.setColor(Color.GOLD);
+                startButton.setDrawable(startDrawable);
+            } else {
+                statusLabel.setText("Status: Battle!");
+                statusLabel.setColor(Color.RED);
+                startButton.setDrawable(pauseDrawable);
+            }
         } else {
             statusLabel.setText("Next wave: Ready");
             statusLabel.setColor(Color.GOLD);
-            startButton.setVisible(true);
+            startButton.setDrawable(startDrawable);
         }
     }
 
     public void dispose() {
-        if (btnBg != null) btnBg.dispose();
         if (backpackTex != null) backpackTex.dispose();
+        if (startTex != null) startTex.dispose();
+        if (pauseTex != null) pauseTex.dispose();
     }
 }
