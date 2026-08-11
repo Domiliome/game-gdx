@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -22,13 +23,18 @@ import io.github.simple_game.core.service.WaveManager;
 public class TopStatusBar extends Table {
     private final GameLoop gameLoop;
     private final Label waveLabel, statusLabel, economyLabel;
-    private final TextButton startButton, bagButton;
+    private final TextButton startButton;
+    private final Image bagImage;
     private final Texture btnBg;
+    private final Texture backpackTex;
 
     public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
         this.gameLoop = gameLoop;
 
         float scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
+
+        backpackTex = new Texture(Gdx.files.internal("backpack.png"));
+        backpackTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
         labelStyle.font.getData().setScale(1.5f * scale);
@@ -57,12 +63,11 @@ public class TopStatusBar extends Table {
             }
         });
 
-        bagButton = new TextButton(" BAG ", btnStyle);
-        bagButton.addListener(new ClickListener() {
+        bagImage = new Image(backpackTex);
+        bagImage.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(InputEvent e, float x, float y) {
                 game.setScreen(new io.github.simple_game.core.presentation.screen.InventoryScreen(game, gameScreen, TopStatusBar.this.gameLoop));
-
             }
         });
 
@@ -75,7 +80,8 @@ public class TopStatusBar extends Table {
         this.left().top();
         this.add(textTable).expandX().left();
 
-        this.add(bagButton).right().size(120 * scale, 60 * scale).padRight(10 * scale);
+        // ИСПРАВЛЕНО: Базовый размер увеличен до 96 пикселей. Крупно, сочно и отлично нажимается!
+        this.add(bagImage).right().size(96f * scale, 96f * scale).padRight(20 * scale);
         this.add(startButton).right().size(160 * scale, 60 * scale).padRight(20 * scale);
     }
 
@@ -102,5 +108,6 @@ public class TopStatusBar extends Table {
 
     public void dispose() {
         if (btnBg != null) btnBg.dispose();
+        if (backpackTex != null) backpackTex.dispose();
     }
 }
