@@ -6,8 +6,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import io.github.simple_game.core.model.entity.tower.*;
+
+import io.github.simple_game.core.model.entity.tower.ArcherTower;
+import io.github.simple_game.core.model.entity.tower.CannonTower;
+import io.github.simple_game.core.model.entity.tower.MagicTower;
+import io.github.simple_game.core.model.entity.tower.Tower;
+import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.service.GameLoop;
 
 public class WorldSpriteRenderer {
