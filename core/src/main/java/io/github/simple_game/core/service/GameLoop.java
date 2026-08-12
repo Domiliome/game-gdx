@@ -1,6 +1,7 @@
 package io.github.simple_game.core.service;
 
 import com.badlogic.gdx.utils.Array;
+
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.items.Item;
@@ -20,7 +21,7 @@ public class GameLoop {
 
     private Tower selectedTower = null;
     private boolean isVictory = false;
-    private boolean isPaused = false; // ВНЕДРЕНО: Флаг глобальной игровой паузы
+    private boolean isPaused = false;
 
     public GameLoop(Main game) {
         this.roadPath = new RoadPath();
@@ -35,13 +36,12 @@ public class GameLoop {
     public void update(float deltaTime) {
         if (isVictory) return;
 
-        // ВНЕДРЕНО: Если игра на паузе — полностью останавливаем такты менеджеров и движение мобов
+
         if (isPaused) return;
 
         waveManager.update(deltaTime, entityManager.getEnemies());
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
 
-        // Лимит сессии. Если 20 волна успешно зачищена и врагов на карте нет — ПОБЕДА!
         if (waveManager.getCurrentWaveNumber() == 20 && !waveManager.isWaveActive() && entityManager.getEnemies().size == 0) {
             this.isVictory = true;
             System.out.println("🏆 СЕССИЯ ЗАВЕРШЕНА! ВЫ ОДОЛЕЛИ ВСЕ 20 ВОЛН!");
