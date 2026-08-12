@@ -53,7 +53,6 @@ public class WorldSpriteRenderer {
         int rows = (int) (worldHeight / LOGIC_CELL_SIZE) + 1;
         boolean[][] isRoad = new boolean[cols][rows];
 
-        // Пасс 1: Картируем всю карту в логическую boolean-матрицу дороги
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
                 cellBounds.set(x * LOGIC_CELL_SIZE, y * LOGIC_CELL_SIZE, LOGIC_CELL_SIZE, LOGIC_CELL_SIZE);
@@ -66,7 +65,6 @@ public class WorldSpriteRenderer {
             }
         }
 
-        // Пасс 2: Рендерим шахматный пол или авто-тайловую дорогу с вращением
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
                 float drawX = x * LOGIC_CELL_SIZE;
@@ -78,7 +76,6 @@ public class WorldSpriteRenderer {
                     continue;
                 }
 
-                // Сканируем 4 соседние ячейки вокруг текущего участка дороги
                 boolean left  = x > 0 && isRoad[x - 1][y];
                 boolean right = x < cols - 1 && isRoad[x + 1][y];
                 boolean down  = y > 0 && isRoad[x][y - 1];
@@ -88,20 +85,20 @@ public class WorldSpriteRenderer {
                 float rotation = 0f;
 
                 if (up && down) {
-                    tileToDraw = roadStraight; rotation = 0f; // Теперь прямая текстура по умолчанию вертикальная
+                    tileToDraw = roadStraight; rotation = 0f;
                 } else if (left && right) {
-                    tileToDraw = roadStraight; rotation = 90f; // Горизонтальные участки разворачиваем на 90 градусов
+                    tileToDraw = roadStraight; rotation = 90f;
                 }
-                // Переворачиваем угловые коннекторы:
+
                 else if (right && up) { tileToDraw = roadTurn; rotation = 0f; }
                 else if (right && down) { tileToDraw = roadTurn; rotation = 270f; }
                 else if (left && up) { tileToDraw = roadTurn; rotation = 90f; }
                 else if (left && down) { tileToDraw = roadTurn; rotation = 180f; }
-                // Корректируем тупики и стартовые позиции:
+
                 else if (up || down) { tileToDraw = roadStraight; rotation = 0f; }
                 else if (left || right) { tileToDraw = roadStraight; rotation = 90f; }
 
-                // Отрисовываем заново с чистыми углами
+
                 batch.draw(tileToDraw, drawX, drawY, 16f, 16f, LOGIC_CELL_SIZE, LOGIC_CELL_SIZE, 1f, 1f, rotation);
 
             }
@@ -121,7 +118,7 @@ public class WorldSpriteRenderer {
                 TextureRegion currentFrame = ((MagicTower) tower).getCurrentInitFrame();
                 if (currentFrame != null) { batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE); continue; }
             }
-            // ИСПРАВЛЕНО: Убрана опечатка, теперь пушка проверяется корректно через переменную цикла "tower"
+
             if (tower.getType() == TowerType.CANNON && tower instanceof CannonTower && ((CannonTower) tower).isInitializing()) {
                 TextureRegion currentFrame = ((CannonTower) tower).getCurrentInitFrame();
                 if (currentFrame != null) { batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE); continue; }

@@ -59,7 +59,7 @@ public class GameScreen extends ScreenAdapter {
                     show();
                     resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
                 },
-                () -> game.setScreen(new MainMenuScreen(game)) // Лямбда закрытия сессии и ухода в меню
+                () -> game.setScreen(new MainMenuScreen(game))
             );
 
             PathType[] types = PathType.values();
