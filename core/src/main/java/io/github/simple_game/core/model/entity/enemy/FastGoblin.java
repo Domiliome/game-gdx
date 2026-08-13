@@ -18,7 +18,7 @@ public class FastGoblin extends Enemy {
     private float animationTime = 0f;
 
     private final Vector2 lastPosition = new Vector2();
-    private float currentRotation = 0f; // ВНЕДРЕНО: Текущий угол поворота гоблина в градусах
+    private float currentRotation = 0f;
 
     public FastGoblin(float x, float y, float hpMod, float speedMod) {
         super(x, y);
@@ -56,11 +56,10 @@ public class FastGoblin extends Enemy {
         TextureRegion frame = runAnimation.getKeyFrame(animationTime);
         if (frame == null) return null;
 
-        // ВНЕДРЕНО: Расчет смещения гоблина за текущий такт времени по осям X и Y
         float deltaX = position.x - lastPosition.x;
         float deltaY = position.y - lastPosition.y;
 
-        // Математический ИИ разворота во все 4 стороны на основе дельты координат
+
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
             // Движение преимущественно по горизонтали
             if (deltaX > 0.1f) {
@@ -77,13 +76,11 @@ public class FastGoblin extends Enemy {
             }
         }
 
-        // Фиксируем координаты для следующего кадра проверки
         lastPosition.set(position.x, position.y);
 
         return frame;
     }
 
-    // ВНЕДРЕНО: Геттер угла поворота для вызова внутри EntityRenderer
     public float getCurrentRotation() {
         return currentRotation;
     }
