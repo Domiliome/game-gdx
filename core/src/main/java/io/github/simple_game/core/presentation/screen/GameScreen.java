@@ -7,12 +7,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.model.movement.PathType;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
+import io.github.simple_game.core.presentation.GameViewport;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
@@ -41,9 +41,9 @@ public class GameScreen extends ScreenAdapter {
     public void show() {
         if (gameLoop == null) {
             worldCamera = new OrthographicCamera();
-            worldViewport = new ExtendViewport(480, 800, worldCamera);
+            worldViewport = new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, worldCamera);
             uiCamera = new OrthographicCamera();
-            uiViewport = new ScreenViewport(uiCamera);
+            uiViewport = new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, uiCamera);
 
             gameLoop = new GameLoop(game);
 

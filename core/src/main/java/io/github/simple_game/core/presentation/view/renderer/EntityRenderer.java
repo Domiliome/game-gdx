@@ -5,14 +5,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
-import io.github.simple_game.core.model.entity.enemy.FastGoblin;
+import io.github.simple_game.core.model.entity.map.GameGrid;
+import io.github.simple_game.core.model.entity.projectile.PoisonBolt;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
+import io.github.simple_game.core.model.entity.tower.TeslaTower;
+import io.github.simple_game.core.model.entity.tower.Tower;
 import io.github.simple_game.core.service.GameLoop;
 
 public class EntityRenderer {
     private final GameLoop gameLoop;
     private final SpriteBatch spriteBatch;
-    private static final int VISUAL_SIZE = 64; // Наш масштаб 2х
+    private static final int BASE_VISUAL_SIZE = GameGrid.CELL_SIZE + 16;
 
     public EntityRenderer(GameLoop gameLoop) {
         this.gameLoop = gameLoop;
@@ -22,60 +25,71 @@ public class EntityRenderer {
     public void render(ShapeRenderer shapeRenderer) {
         spriteBatch.setProjectionMatrix(shapeRenderer.getProjectionMatrix());
 
-        // --- СЛОЙ 1: ОТРИСОВКА ПИКСЕЛЬНЫХ ТЕКСТУР ГОБЛИНОВ ---
         spriteBatch.begin();
         for (Enemy enemy : gameLoop.getEnemies()) {
             if (!enemy.isActive()) continue;
 
-            if (enemy instanceof FastGoblin goblin) {
-                TextureRegion currentFrame = goblin.getCurrentGoblinFrame();
-                if (currentFrame != null) {
-                    float drawX = goblin.getPosition().x - (VISUAL_SIZE / 2f);
-                    float drawY = goblin.getPosition().y - (VISUAL_SIZE / 2f);
+            TextureRegion frame = enemy.getCurrentFrame();
+            if (frame == null) continue;
 
-                    // Извлекаем рассчитанный угол в градусах (0, 90, 180, 270)
-                    float rotation = goblin.getCurrentRotation();
+            float size = BASE_VISUAL_SIZE * enemy.getVisualScale();
+            float drawX = enemy.getPosition().x - (size / 2f);
+            float drawY = enemy.getPosition().y - (size / 2f);
+            float origin = size / 2f;
 
-                    // ИСПРАВЛЕНО: Расширенный метод SpriteBatch с поддержкой вращения видеочипом.
-                    // Параметры 32f, 32f задают центр вращения точно посередине гоблина,
-                    // обеспечивая безупречный и плавный разворот во все 4 стороны лабиринта!
-                    spriteBatch.draw(
-                        currentFrame,
-                        drawX, drawY,
-                        32f, 32f,                 // Точка опоры (Origin) X и Y
-                        VISUAL_SIZE, VISUAL_SIZE, // Размеры отрисовки
-                        1f, 1f,                   // Масштаб X и Y
-                        rotation                  // Угол вращения в градусах
-                    );
-                }
-            }
+            spriteBatch.draw(
+                    frame,
+                    drawX, drawY,
+                    origin, origin,
+                    size, size,
+                    1f, 1f,
+                    enemy.getCurrentRotation()
+            );
         }
         spriteBatch.end();
 
-        // --- СЛОЙ 2: ОТРИСОВКА ГЕОМЕТРИИ (Остальные мобы и золотые пули) ---
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        for (Enemy enemy : gameLoop.getEnemies()) {
-            if (!enemy.isActive()) continue;
-
-            if (!(enemy instanceof FastGoblin)) {
-                switch (enemy.getTier()) {
-                    case TIER_1_LIGHT  -> shapeRenderer.setColor(Color.YELLOW);
-                    case TIER_2_NORMAL -> shapeRenderer.setColor(Color.GREEN);
-                    case TIER_3_HEAVY  -> shapeRenderer.setColor(Color.BLUE);
-                    default            -> shapeRenderer.setColor(Color.PURPLE);
-                }
-                shapeRenderer.circle(enemy.getPosition().x, enemy.getPosition().y, 12f);
-            }
-        }
 
         shapeRenderer.setColor(Color.GOLD);
         for (Projectile projectile : gameLoop.getProjectiles()) {
             if (projectile.isActive()) {
+                if (projectile instanceof PoisonBolt) {
+                    shapeRenderer.setColor(Color.LIME);
+                } else {
+                    shapeRenderer.setColor(Color.GOLD);
+                }
                 shapeRenderer.circle(projectile.getPosition().x, projectile.getPosition().y, 5f);
             }
         }
 
+        shapeRenderer.end();
+
+        renderTeslaBeams(shapeRenderer);
+    }
+
+    private void renderTeslaBeams(ShapeRenderer shapeRenderer) {
+        com.badlogic.gdx.Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_BLEND);
+        com.badlogic.gdx.Gdx.gl.glBlendFunc(
+                com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA,
+                com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (Tower tower : gameLoop.getTowers()) {
+            if (!(tower instanceof TeslaTower tesla) || !tesla.shouldDrawBeam()) {
+                continue;
+            }
+            TeslaTower partner = tesla.getPartner();
+            float x1 = tesla.getPosition().x;
+            float y1 = tesla.getPosition().y;
+            float x2 = partner.getPosition().x;
+            float y2 = partner.getPosition().y;
+
+            shapeRenderer.setColor(0.15f, 0.55f, 1f, 0.4f);
+            shapeRenderer.rectLine(x1, y1, x2, y2, 8f);
+            shapeRenderer.setColor(0.55f, 0.9f, 1f, 0.95f);
+            shapeRenderer.rectLine(x1, y1, x2, y2, 3f);
+            shapeRenderer.setColor(1f, 1f, 1f, 1f);
+            shapeRenderer.rectLine(x1, y1, x2, y2, 1.2f);
+        }
         shapeRenderer.end();
     }
 }

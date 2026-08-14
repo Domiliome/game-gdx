@@ -1,9 +1,5 @@
 package io.github.simple_game.core.model.entity.tower;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
 import io.github.simple_game.core.model.entity.projectile.Arrow;
@@ -25,18 +21,7 @@ public class ArcherTower extends Tower {
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-
-        Texture sheet = new Texture(Gdx.files.internal("tower_archer_init.png"));
-        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
-
-        int totalFrames = tmp[0].length;
-        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
-
-        // ИСПРАВЛЕНО: Заменили ручной цикл for на быстрый системный arraycopy, чтобы полностью убрать ворнинг "Manual array copy"
-        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
-
-        // ИСПРАВЛЕНО: Убрали избыточный тип данных в выражении создания объекта, заменив его на алмазный оператор <>
-        this.initAnimation = new Animation<>(0.06f, animationFrames);
+        loadInitAnimation("towers/archer_init.png");
     }
 
     @Override
@@ -68,10 +53,4 @@ public class ArcherTower extends Tower {
         Projectile arrow = new Arrow(position.x, position.y, target, finalDamage, type, isCrit);
         projectilesToSpawn.add(arrow);
     }
-
-    public TextureRegion getCurrentInitFrame() {
-        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
-    }
-
-    public boolean isInitializing() { return isInitializing; }
 }

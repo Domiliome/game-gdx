@@ -29,11 +29,11 @@ public class TowerControlPanel extends Table {
         pixmap.dispose();
 
         TextButton.TextButtonStyle upStyle = new TextButton.TextButtonStyle();
-        upStyle.font = new BitmapFont(); upStyle.font.getData().setScale(1.6f);
+        upStyle.font = new BitmapFont(); upStyle.font.getData().setScale(1.25f);
         upStyle.fontColor = Color.WHITE; upStyle.up = new TextureRegionDrawable(upBg);
 
         TextButton.TextButtonStyle sellStyle = new TextButton.TextButtonStyle();
-        sellStyle.font = new BitmapFont(); sellStyle.font.getData().setScale(1.6f);
+        sellStyle.font = new BitmapFont(); sellStyle.font.getData().setScale(1.25f);
         sellStyle.fontColor = Color.WHITE; sellStyle.up = new TextureRegionDrawable(sellBg);
 
         upgradeBtn = new TextButton(" UPGRADE ", upStyle);
@@ -55,7 +55,7 @@ public class TowerControlPanel extends Table {
 
                     gameLoop.getCurrencyManager().addGold(sellRefund);
 
-
+                    sel.onRemoved();
                     gameLoop.getTowers().removeValue(sel, true);
 
                     gameLoop.setSelectedTower(null);
@@ -65,8 +65,8 @@ public class TowerControlPanel extends Table {
 
 
         this.center();
-        this.add(upgradeBtn).size(200, 60).padRight(15);
-        this.add(sellBtn).size(200, 60);
+        this.add(upgradeBtn).size(200, 56).padRight(12);
+        this.add(sellBtn).size(200, 56);
     }
 
     @Override

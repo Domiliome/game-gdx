@@ -27,7 +27,7 @@ public class GameLoop {
         this.roadPath = new RoadPath();
         this.entityManager = new EntityManager();
         this.waveManager = new WaveManager(roadPath);
-        this.currencyManager = new CurrencyManager(250, 20);
+        this.currencyManager = new CurrencyManager(10000, 20);
         this.gameGrid = new GameGrid(roadPath);
         this.shopService = new ShopService();
         this.inventoryManager = game.getGlobalInventory();

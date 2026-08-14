@@ -4,12 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.ObjectMap;
 
-import io.github.simple_game.core.model.entity.tower.ArcherTower;
-import io.github.simple_game.core.model.entity.tower.CannonTower;
-import io.github.simple_game.core.model.entity.tower.MagicTower;
+import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.tower.Tower;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.service.GameLoop;
@@ -18,61 +15,48 @@ public class WorldSpriteRenderer {
     private final GameLoop gameLoop;
     private final Texture tileLight, tileDark;
     private final TextureRegion roadStraight, roadTurn;
-    private final Texture archerTexture, cannonTexture, magicTexture;
+    private final ObjectMap<TowerType, Texture> towerTextures = new ObjectMap<>();
 
-    private static final int LOGIC_CELL_SIZE = 32;
-    private static final int TOWER_VISUAL_SIZE = 64;
-    private final Rectangle cellBounds = new Rectangle();
+    private static final int TOWER_VISUAL_SIZE = GameGrid.CELL_SIZE * 2;
 
     public WorldSpriteRenderer(GameLoop gameLoop) {
         this.gameLoop = gameLoop;
-        this.tileLight = new Texture(Gdx.files.internal("tile_light.png"));
-        this.tileDark = new Texture(Gdx.files.internal("tile_dark.png"));
+        this.tileLight = new Texture(Gdx.files.internal("tiles/light.png"));
+        this.tileDark = new Texture(Gdx.files.internal("tiles/dark.png"));
 
-        Texture straightTex = new Texture(Gdx.files.internal("tile_road_straight.png"));
-        Texture turnTex = new Texture(Gdx.files.internal("tile_road_turn.png"));
+        Texture straightTex = new Texture(Gdx.files.internal("tiles/road_straight.png"));
+        Texture turnTex = new Texture(Gdx.files.internal("tiles/road_turn.png"));
         this.roadStraight = new TextureRegion(straightTex);
         this.roadTurn = new TextureRegion(turnTex);
-
-        this.archerTexture = new Texture(Gdx.files.internal("tower_archer.png"));
-        this.cannonTexture = new Texture(Gdx.files.internal("tower_cannon.png"));
-        this.magicTexture = new Texture(Gdx.files.internal("tower_magic.png"));
 
         tileLight.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         tileDark.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         straightTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         turnTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        archerTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        cannonTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        magicTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        for (TowerType type : TowerType.values()) {
+            Texture texture = new Texture(Gdx.files.internal(type.getIdleTexturePath()));
+            texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            towerTextures.put(type, texture);
+        }
     }
 
     public void renderBackground(SpriteBatch batch, float worldHeight) {
         var roadPath = gameLoop.getRoadPath();
-        int cols = 480 / LOGIC_CELL_SIZE;
-        int rows = (int) (worldHeight / LOGIC_CELL_SIZE) + 1;
+        int cols = GameGrid.columnCount();
+        int rows = (int) (worldHeight / GameGrid.CELL_SIZE) + 1;
         boolean[][] isRoad = new boolean[cols][rows];
 
-        for (int x = 0; x < cols; x++) {
-            for (int y = 0; y < rows; y++) {
-                cellBounds.set(x * LOGIC_CELL_SIZE, y * LOGIC_CELL_SIZE, LOGIC_CELL_SIZE, LOGIC_CELL_SIZE);
-                for (int i = 0; i < roadPath.getPointCount() - 1; i++) {
-                    if (Intersector.intersectSegmentRectangle(roadPath.getPoint(i), roadPath.getPoint(i + 1), cellBounds)) {
-                        isRoad[x][y] = true;
-                        break;
-                    }
-                }
-            }
-        }
+        GameGrid.fillRoadMask(isRoad, roadPath);
 
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
-                float drawX = x * LOGIC_CELL_SIZE;
-                float drawY = y * LOGIC_CELL_SIZE;
+                float drawX = x * GameGrid.CELL_SIZE;
+                float drawY = y * GameGrid.CELL_SIZE;
 
                 if (!isRoad[x][y]) {
                     Texture currentTile = ((x + y) % 2 == 0) ? tileLight : tileDark;
-                    batch.draw(currentTile, drawX, drawY, LOGIC_CELL_SIZE, LOGIC_CELL_SIZE);
+                    batch.draw(currentTile, drawX, drawY, GameGrid.CELL_SIZE, GameGrid.CELL_SIZE);
                     continue;
                 }
 
@@ -81,28 +65,36 @@ public class WorldSpriteRenderer {
                 boolean down  = y > 0 && isRoad[x][y - 1];
                 boolean up    = y < rows - 1 && isRoad[x][y + 1];
 
-                TextureRegion tileToDraw = roadStraight;
-                float rotation = 0f;
-
-                if (up && down) {
-                    tileToDraw = roadStraight; rotation = 0f;
-                } else if (left && right) {
-                    tileToDraw = roadStraight; rotation = 90f;
-                }
-
-                else if (right && up) { tileToDraw = roadTurn; rotation = 0f; }
-                else if (right && down) { tileToDraw = roadTurn; rotation = 270f; }
-                else if (left && up) { tileToDraw = roadTurn; rotation = 90f; }
-                else if (left && down) { tileToDraw = roadTurn; rotation = 180f; }
-
-                else if (up || down) { tileToDraw = roadStraight; rotation = 0f; }
-                else if (left || right) { tileToDraw = roadStraight; rotation = 90f; }
-
-
-                batch.draw(tileToDraw, drawX, drawY, 16f, 16f, LOGIC_CELL_SIZE, LOGIC_CELL_SIZE, 1f, 1f, rotation);
-
+                RoadTile tile = pickRoadTile(left, right, down, up);
+                float origin = GameGrid.CELL_SIZE / 2f;
+                batch.draw(tile.region(), drawX, drawY, origin, origin,
+                        GameGrid.CELL_SIZE, GameGrid.CELL_SIZE, 1f, 1f, tile.rotation());
             }
         }
+    }
+
+    private record RoadTile(TextureRegion region, float rotation) {}
+
+    private RoadTile pickRoadTile(boolean left, boolean right, boolean down, boolean up) {
+        int horizontal = (left ? 1 : 0) + (right ? 1 : 0);
+        int vertical = (down ? 1 : 0) + (up ? 1 : 0);
+
+        if (horizontal == 2) {
+            return new RoadTile(roadStraight, 90f);
+        }
+        if (vertical == 2) {
+            return new RoadTile(roadStraight, 0f);
+        }
+
+        if (right && up)   return new RoadTile(roadTurn, 0f);
+        if (right && down) return new RoadTile(roadTurn, 270f);
+        if (left && up)    return new RoadTile(roadTurn, 90f);
+        if (left && down)  return new RoadTile(roadTurn, 180f);
+
+        if (up || down)    return new RoadTile(roadStraight, 0f);
+        if (left || right) return new RoadTile(roadStraight, 90f);
+
+        return new RoadTile(roadStraight, 0f);
     }
 
     public void renderTowers(SpriteBatch batch) {
@@ -110,30 +102,29 @@ public class WorldSpriteRenderer {
             float drawX = tower.getPosition().x - (TOWER_VISUAL_SIZE / 2f);
             float drawY = tower.getPosition().y - (TOWER_VISUAL_SIZE / 2f);
 
-            if (tower.getType() == TowerType.ARCHER && tower instanceof ArcherTower && ((ArcherTower) tower).isInitializing()) {
-                TextureRegion currentFrame = ((ArcherTower) tower).getCurrentInitFrame();
-                if (currentFrame != null) { batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE); continue; }
-            }
-            if (tower.getType() == TowerType.MAGIC && tower instanceof MagicTower && ((MagicTower) tower).isInitializing()) {
-                TextureRegion currentFrame = ((MagicTower) tower).getCurrentInitFrame();
-                if (currentFrame != null) { batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE); continue; }
-            }
-
-            if (tower.getType() == TowerType.CANNON && tower instanceof CannonTower && ((CannonTower) tower).isInitializing()) {
-                TextureRegion currentFrame = ((CannonTower) tower).getCurrentInitFrame();
-                if (currentFrame != null) { batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE); continue; }
+            if (tower.isInitializing()) {
+                TextureRegion currentFrame = tower.getCurrentInitFrame();
+                if (currentFrame != null) {
+                    batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE);
+                    continue;
+                }
             }
             batch.draw(getTexture(tower.getType()), drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE);
         }
     }
 
     public Texture getTexture(TowerType type) {
-        return switch (type) { case ARCHER -> archerTexture; case CANNON -> cannonTexture; case MAGIC -> magicTexture; };
+        return towerTextures.get(type);
     }
 
     public void dispose() {
-        tileLight.dispose(); tileDark.dispose();
-        roadStraight.getTexture().dispose(); roadTurn.getTexture().dispose();
-        archerTexture.dispose(); cannonTexture.dispose(); magicTexture.dispose();
+        tileLight.dispose();
+        tileDark.dispose();
+        roadStraight.getTexture().dispose();
+        roadTurn.getTexture().dispose();
+        for (Texture texture : towerTextures.values()) {
+            texture.dispose();
+        }
+        towerTextures.clear();
     }
 }

@@ -1,6 +1,5 @@
 package io.github.simple_game.core.presentation.ui;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -20,6 +19,9 @@ import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.WaveManager;
 
 public class TopStatusBar extends Table {
+    private static final float ICON_SIZE = 56f;
+    private static final float FONT_SCALE = 1.4f;
+
     private final GameLoop gameLoop;
     private final Label waveLabel, statusLabel, economyLabel;
     private final Image startButton, bagImage;
@@ -28,11 +30,10 @@ public class TopStatusBar extends Table {
 
     public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
         this.gameLoop = gameLoop;
-        float scale = (Gdx.app.getType() == Application.ApplicationType.Android) ? 2.0f : 1.0f;
 
-        backpackTex = new Texture(Gdx.files.internal("backpack.png"));
-        startTex = new Texture(Gdx.files.internal("start.png"));
-        pauseTex = new Texture(Gdx.files.internal("pause.png"));
+        backpackTex = new Texture(Gdx.files.internal("ui/icons/backpack.png"));
+        startTex = new Texture(Gdx.files.internal("ui/icons/start.png"));
+        pauseTex = new Texture(Gdx.files.internal("ui/icons/pause.png"));
 
         backpackTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         startTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -42,7 +43,7 @@ public class TopStatusBar extends Table {
         this.pauseDrawable = new TextureRegionDrawable(new TextureRegion(pauseTex));
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
-        labelStyle.font.getData().setScale(1.5f * scale);
+        labelStyle.font.getData().setScale(FONT_SCALE);
 
         waveLabel = new Label("", labelStyle);
         statusLabel = new Label("", labelStyle);
@@ -66,37 +67,26 @@ public class TopStatusBar extends Table {
         bagImage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent e, float x, float y) {
-                game.setScreen(new io.github.simple_game.core.presentation.screen.InventoryScreen(game, gameScreen, TopStatusBar.this.gameLoop));
+                game.setScreen(new io.github.simple_game.core.presentation.screen.InventoryScreen(
+                        game, gameScreen, TopStatusBar.this.gameLoop));
             }
         });
 
         Table textTable = new Table();
         textTable.left().top();
-        textTable.add(waveLabel).left().padBottom(5 * scale).row();
-        textTable.add(statusLabel).left().padBottom(5 * scale).row();
+        textTable.add(waveLabel).left().padBottom(4).row();
+        textTable.add(statusLabel).left().padBottom(4).row();
         textTable.add(economyLabel).left();
 
         Table buttonTable = new Table();
         buttonTable.right().top();
+        buttonTable.add(startButton).size(ICON_SIZE, ICON_SIZE).padRight(4);
+        buttonTable.add(bagImage).size(ICON_SIZE, ICON_SIZE);
 
-        // Рюкзак слева, старт/пауза справа с микро-отступом в 6 пикселей
-        buttonTable.add(startButton).size(96f * scale, 96f * scale);
-        buttonTable.add(bagImage).size(96f * scale, 96f * scale).padRight(6f * scale);
-
-
-        // ИСПРАВЛЕНО: Убрали опасный setFillParent.
-        // Жестко фиксируем ширину статус-бара под логическую ширину экрана (480 пикселей)
-        this.clearChildren();
-        this.setWidth(480f);
-        this.setHeight(110f * scale); // Задали достаточную высоту, чтобы крупные кнопки не обрезались
-
-        this.left().top().pad(10f * scale);
-
-        // Теперь expandX сработает идеально: растолкнет элементы на все 480 пикселей ширины!
+        this.left().top().pad(10);
         this.add(textTable).expandX().left().top();
         this.add(buttonTable).right().top();
     }
-
 
     @Override
     public void act(float delta) {

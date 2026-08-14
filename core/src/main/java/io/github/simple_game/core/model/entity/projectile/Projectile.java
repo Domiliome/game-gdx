@@ -20,16 +20,7 @@ public class Projectile extends Entity {
         super(x, y);
         this.target = target;
         this.damage = damage;
-        this.speed = determineSpeed(towerType);
-    }
-
-    private float determineSpeed(TowerType towerType) {
-        return switch (towerType) {
-            case ARCHER -> 400f;
-            case CANNON -> 250f;
-            case MAGIC  -> 320f;
-            default     -> 300f;
-        };
+        this.speed = towerType.getProjectileSpeed();
     }
 
     public void update(float deltaTime, CurrencyManager economy) {

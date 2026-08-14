@@ -31,9 +31,9 @@ public class GameOverWindow extends Table {
 
         // 2. Стили текста
         Label.LabelStyle titleStyle = new Label.LabelStyle(new BitmapFont(), Color.RED);
-        titleStyle.font.getData().setScale(3.5f);
+        titleStyle.font.getData().setScale(2.2f);
         Label.LabelStyle descStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
-        descStyle.font.getData().setScale(1.8f);
+        descStyle.font.getData().setScale(1.2f);
 
         Label titleLabel = new Label("GAME OVER", titleStyle);
         waveLabel = new Label("", descStyle);
@@ -41,7 +41,7 @@ public class GameOverWindow extends Table {
         // 3. Кнопка RESTART
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
         btnStyle.font = new BitmapFont();
-        btnStyle.font.getData().setScale(2.2f);
+        btnStyle.font.getData().setScale(1.3f);
         btnStyle.fontColor = Color.WHITE;
 
         TextButton restartBtn = new TextButton(" TRY AGAIN ", btnStyle);
@@ -56,7 +56,7 @@ public class GameOverWindow extends Table {
         this.center();
         this.add(titleLabel).padBottom(20).row();
         this.add(waveLabel).padBottom(40).row();
-        this.add(restartBtn).size(280, 70);
+        this.add(restartBtn).size(220, 50);
         this.setVisible(false);
     }
 

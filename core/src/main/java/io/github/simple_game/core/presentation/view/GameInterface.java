@@ -34,11 +34,11 @@ public class GameInterface {
         GameOverWindow gameOverWindow = new GameOverWindow(gameLoop, restartAction);
         VictoryWindow victoryWindow = new VictoryWindow(gameLoop, restartAction, exitToMenuAction);
 
-        rootTable.add(statusBar).expandX().left().top().pad(20);
+        rootTable.add(statusBar).expandX().fillX().left().top().padTop(6).padLeft(6).padRight(6);
         rootTable.row();
-        rootTable.add(upgradeButton).expand().bottom().padBottom(20);
+        rootTable.add(upgradeButton).expand().bottom().padBottom(8);
         rootTable.row();
-        rootTable.add(shopPanel).expandX().fillX().bottom();
+        rootTable.add(shopPanel).expandX().fillX().bottom().padBottom(4);
 
         this.stage.addActor(rootTable);
 

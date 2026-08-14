@@ -1,5 +1,9 @@
 package io.github.simple_game.core.model.entity.tower;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
 import io.github.simple_game.core.model.entity.Entity;
@@ -14,23 +18,20 @@ public abstract class Tower extends Entity {
     protected int currentLevel = 1;
     protected int maxLevel = 5;
 
-    // БАЗОВЫЕ характеристики (чистые, без шмоток)
     protected float baseDamage;
     protected float baseAttackRange;
     protected float baseAttackCooldown;
     protected float shootTimer = 0f;
 
-    // ДИНАМИЧЕСКИЕ характеристики (с учетом шмоток в текущем кадре)
     protected float damage;
     protected float attackRange;
     protected float attackCooldown;
 
     protected Enemy target;
 
-    // ВНЕДРЕНО: Поля для поддержки покадровой анимации появления башни
-    protected com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> initAnimation;
+    protected Animation<TextureRegion> initAnimation;
     protected float animationTime = 0f;
-    protected boolean isInitializing = true; // Изначально башня всегда строится
+    protected boolean isInitializing = true;
 
     public Tower(float x, float y, TowerType type, GameLoop gameLoop) {
         super(x, y);
@@ -42,26 +43,33 @@ public abstract class Tower extends Entity {
     public abstract int getUpgradeCost();
     protected abstract void shoot(Array<Projectile> projectilesToSpawn);
 
-        public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
-        // 1. СИНХРОНИЗАЦИЯ (ПЕРЕНЕСЕНО НА САМЫЙ ВЕРХ):
-        // Записываем базовые характеристики башни строго ДО прерывания метода!
+    /**
+     * Загружает горизонтальный spritesheet появления (кадры 32×32).
+     */
+    protected void loadInitAnimation(String assetPath) {
+        Texture sheet = new Texture(Gdx.files.internal(assetPath));
+        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
+        int totalFrames = tmp[0].length;
+        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
+        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
+        this.initAnimation = new Animation<>(0.06f, animationFrames);
+    }
+
+    public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
         if (baseDamage == 0 && damage > 0) {
             baseDamage = damage;
             baseAttackRange = attackRange;
             baseAttackCooldown = attackCooldown;
         }
 
-        // 2. БЛОКИРОВКА АНИМАЦИИ ПОЯВЛЕНИЯ:
-        // Теперь отсчет кадров идет плавно, не затирая внутренние переменные нулями
         if (isInitializing) {
             animationTime += deltaTime;
             if (initAnimation != null && initAnimation.isAnimationFinished(animationTime)) {
-                isInitializing = false; // Строительство завершено!
+                isInitializing = false;
             }
-            return; // Безопасно выходим, анимация больше не будет дёргаться!
+            return;
         }
 
-        // 3. Ежекадровый сброс параметров под динамические шмотки (работает после постройки)
         this.damage = baseDamage;
         this.attackRange = baseAttackRange;
         this.attackCooldown = baseAttackCooldown;
@@ -70,6 +78,13 @@ public abstract class Tower extends Entity {
             item.applyEffect(this);
         }
 
+        updateCombat(deltaTime, enemies, projectilesToSpawn);
+    }
+
+    /**
+     * Обычные башни ищут цель и стреляют. Особые (тесла) переопределяют поведение.
+     */
+    protected void updateCombat(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
         checkAndFindTarget(enemies);
 
         if (target != null) {
@@ -83,15 +98,19 @@ public abstract class Tower extends Entity {
         }
     }
 
+    /** Вызывается перед удалением башни с карты (продажа и т.п.). */
+    public void onRemoved() {}
 
-    @Override public void update(float deltaTime) {}
+    @Override
+    public void update(float deltaTime) {}
 
     protected void checkAndFindTarget(Array<Enemy> enemies) {
         if (target != null && target.isActive() && position.dst(target.getPosition()) <= attackRange) {
             return;
         }
         target = null;
-        for (Enemy enemy : enemies) {
+        for (int i = 0; i < enemies.size; i++) {
+            Enemy enemy = enemies.get(i);
             if (enemy.isActive() && position.dst(enemy.getPosition()) <= attackRange) {
                 target = enemy;
                 break;
@@ -99,14 +118,18 @@ public abstract class Tower extends Entity {
         }
     }
 
-    // Геттеры динамических (финальных) значений для стрельбы и рендеринга кругов
     public float getAttackRange() { return attackRange; }
     public float getDamage() { return damage; }
     public float getAttackCooldown() { return attackCooldown; }
     public TowerType getType() { return type; }
     public int getCurrentLevel() { return currentLevel; }
 
-    // Геттеры/Сеттеры для предметов-стратегий, чтобы они модифицировали временные параметры
+    public boolean isInitializing() { return isInitializing; }
+
+    public TextureRegion getCurrentInitFrame() {
+        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
+    }
+
     public float getDynamicRange() { return attackRange; }
     public void setDynamicRange(float r) { this.attackRange = r; }
     public float getDynamicDamage() { return damage; }

@@ -1,9 +1,5 @@
 package io.github.simple_game.core.model.entity.tower;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
 import io.github.simple_game.core.model.entity.projectile.MagicSphere;
@@ -20,16 +16,7 @@ public class MagicTower extends Tower {
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        Texture sheet = new Texture(Gdx.files.internal("tower_magic_init.png"));
-        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
-
-        int totalFrames = tmp[0].length;
-        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
-
-        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
-
-
-        this.initAnimation = new Animation<>(0.06f, animationFrames);
+        loadInitAnimation("towers/magic_init.png");
     }
 
     @Override
@@ -54,13 +41,5 @@ public class MagicTower extends Tower {
     protected void shoot(Array<Projectile> projectilesToSpawn) {
         Projectile sphere = new MagicSphere(position.x, position.y, target, damage, type);
         projectilesToSpawn.add(sphere);
-    }
-
-    public TextureRegion getCurrentInitFrame() {
-        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
-    }
-
-    public boolean isInitializing() {
-        return isInitializing;
     }
 }

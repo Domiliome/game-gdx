@@ -32,6 +32,13 @@ public abstract class Item {
     public String getDescription() { return description; }
     public float getDropChance() { return dropChance; }
 
+    /**
+     * Путь к PNG-иконке в {@code assets/items/}. Можно заменить своим файлом с тем же именем.
+     */
+    public String getIconPath() {
+        return "items/" + name.replace(' ', '_').toLowerCase() + ".png";
+    }
+
 
     public EnemyTier getRequiredTier() { return requiredTier; }
 }

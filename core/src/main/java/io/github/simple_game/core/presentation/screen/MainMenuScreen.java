@@ -14,9 +14,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 import io.github.simple_game.core.Main;
+import io.github.simple_game.core.presentation.GameViewport;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final Main game;
@@ -25,7 +27,7 @@ public class MainMenuScreen extends ScreenAdapter {
 
     public MainMenuScreen(Main game) {
         this.game = game;
-        this.stage = new Stage(new ScreenViewport());
+        this.stage = new Stage(new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, new OrthographicCamera()));
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(new Color(0.2f, 0.2f, 0.22f, 1f)); pixmap.fill();
@@ -39,17 +41,19 @@ public class MainMenuScreen extends ScreenAdapter {
         stage.clear();
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(new BitmapFont(), Color.GOLD);
-        titleStyle.font.getData().setScale(3.5f);
+        titleStyle.font.getData().setScale(2.2f);
 
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
-        btnStyle.font = new BitmapFont(); btnStyle.font.getData().setScale(2.2f);
-        btnStyle.fontColor = Color.WHITE; btnStyle.up = new TextureRegionDrawable(btnBg);
+        btnStyle.font = new BitmapFont();
+        btnStyle.font.getData().setScale(1.3f);
+        btnStyle.fontColor = Color.WHITE;
+        btnStyle.up = new TextureRegionDrawable(btnBg);
 
         Table table = new Table();
         table.setFillParent(true);
         table.center();
 
-        table.add(new Label("TOWER DEFENSE RPG", titleStyle)).padBottom(60).row();
+        table.add(new Label("TOWER DEFENSE RPG", titleStyle)).padBottom(40).row();
 
         TextButton startBtn = new TextButton(" START GAME ", btnStyle);
         startBtn.addListener(new ClickListener() {
@@ -58,17 +62,16 @@ public class MainMenuScreen extends ScreenAdapter {
                 game.setScreen(new GameScreen(game));
             }
         });
-        table.add(startBtn).size(340, 75).padBottom(20).row();
+        table.add(startBtn).size(280, 58).padBottom(14).row();
 
         TextButton bagBtn = new TextButton(" BAG ", btnStyle);
         bagBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
                 game.setScreen(new InventoryScreen(game, MainMenuScreen.this, game.getGlobalInventoryGameLoop()));
             }
         });
-        table.add(bagBtn).size(340, 75).padBottom(20).row();
+        table.add(bagBtn).size(280, 58).padBottom(14).row();
 
         TextButton exitBtn = new TextButton(" EXIT ", btnStyle);
         exitBtn.addListener(new ClickListener() {
@@ -77,7 +80,7 @@ public class MainMenuScreen extends ScreenAdapter {
                 Gdx.app.exit();
             }
         });
-        table.add(exitBtn).size(340, 75);
+        table.add(exitBtn).size(280, 58);
 
         stage.addActor(table);
     }

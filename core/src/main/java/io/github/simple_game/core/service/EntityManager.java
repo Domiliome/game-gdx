@@ -31,8 +31,8 @@ public class EntityManager {
         }
 
         projectilesToSpawn.clear();
-        for (Tower tower : towers) {
-            tower.update(deltaTime, enemies, projectilesToSpawn);
+        for (int i = 0; i < towers.size; i++) {
+            towers.get(i).update(deltaTime, enemies, projectilesToSpawn);
         }
         projectiles.addAll(projectilesToSpawn);
 
@@ -50,6 +50,7 @@ public class EntityManager {
     public void addTower(Tower tower) { towers.add(tower); }
     public void removeTower(Tower tower) {
         if (tower != null) {
+            tower.onRemoved();
             towers.removeValue(tower, true);
         }
     }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.presentation.view.renderer.DebugGridRenderer;
 import io.github.simple_game.core.presentation.view.renderer.EntityRenderer;
@@ -84,18 +85,21 @@ public class GameRenderer {
             batch.begin();
             batch.setColor(1, 1, 1, 0.6f);
 
+            float ghostSize = GameGrid.CELL_SIZE * 2f;
+            float half = ghostSize / 2f;
             batch.draw(worldSpriteRenderer.getTexture(dragType),
-                    interactionService.getDragAndDropManager().getCurrentX() - 32f,
-                    interactionService.getDragAndDropManager().getCurrentY() - 32f + 4f, 64, 64);
+                    interactionService.getDragAndDropManager().getCurrentX() - half,
+                    interactionService.getDragAndDropManager().getCurrentY() - half + 4f,
+                    ghostSize, ghostSize);
 
             batch.setColor(1, 1, 1, 1f);
             batch.end();
         }
     }
 
-    public Texture getArcherTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.ARCHER); }
-    public Texture getCannonTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.CANNON); }
-    public Texture getMagicTowerTexture() { return worldSpriteRenderer.getTexture(TowerType.MAGIC); }
+    public Texture getTowerTexture(TowerType type) {
+        return worldSpriteRenderer.getTexture(type);
+    }
 
     public void dispose() {
         batch.dispose();

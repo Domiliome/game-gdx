@@ -1,4 +1,5 @@
 package io.github.simple_game.core.model.entity.enemy;
+
 public class NormalZombie extends Enemy {
     public NormalZombie(float x, float y, float hpMod, float speedMod) {
         super(x, y);
@@ -6,5 +7,11 @@ public class NormalZombie extends Enemy {
         this.speed = 70f * speedMod;
         this.goldReward = 25;
         this.tier = EnemyTier.TIER_2_NORMAL;
+        initSprite(getSpritePath(), getDefaultVisualScale());
+    }
+
+    @Override
+    protected String getSpritePath() {
+        return "enemies/zombie.png";
     }
 }
