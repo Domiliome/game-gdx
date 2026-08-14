@@ -11,11 +11,11 @@ public class FastGoblin extends Enemy {
         this.speed = 130f * speedMod;
         this.goldReward = 15;
         this.tier = EnemyTier.TIER_1_LIGHT;
-        initSprite(getSpritePath(), getDefaultVisualScale());
+        initSprite("enemies/goblin.png", 1f);
     }
 
     @Override
-    protected String getSpritePath() {
+    protected final String getSpritePath() {
         return "enemies/goblin.png";
     }
 }

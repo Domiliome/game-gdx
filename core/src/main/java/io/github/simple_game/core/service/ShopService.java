@@ -19,7 +19,7 @@ public class ShopService {
     private final TowerType[] currentSlots = new TowerType[SLOT_COUNT];
 
     public ShopService() {
-        refreshShop();
+        rollSlots();
     }
 
     public TowerType[] getShopSlots() {
@@ -27,6 +27,10 @@ public class ShopService {
     }
 
     public void refreshShop() {
+        rollSlots();
+    }
+
+    private void rollSlots() {
         List<TowerType> pool = new ArrayList<>(List.of(TowerType.values()));
         Collections.shuffle(pool, random);
         for (int i = 0; i < SLOT_COUNT; i++) {

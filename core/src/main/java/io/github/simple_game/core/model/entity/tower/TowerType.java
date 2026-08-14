@@ -1,5 +1,7 @@
 package io.github.simple_game.core.model.entity.tower;
 
+import java.util.Locale;
+
 import io.github.simple_game.core.service.GameLoop;
 
 /**
@@ -32,6 +34,10 @@ public enum TowerType {
 
     public String getIdleTexturePath() {
         return idleTexturePath;
+    }
+
+    public String getCardTexturePath() {
+        return "card/" + name().toLowerCase(Locale.ROOT) + "_card.png";
     }
 
     public float getProjectileSpeed() {
