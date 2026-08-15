@@ -5,8 +5,9 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import io.github.simple_game.core.model.entity.map.GameGrid;
+
 public class CameraGestureService extends GestureDetector.GestureAdapter {
-    private final Viewport worldViewport;
     private final OrthographicCamera camera;
     private final Vector2 velocity = new Vector2();
     private float initialZoom = 1.0f;
@@ -17,7 +18,6 @@ public class CameraGestureService extends GestureDetector.GestureAdapter {
     private static final float MAX_ZOOM = 2.0f;
 
     public CameraGestureService(Viewport worldViewport) {
-        this.worldViewport = worldViewport;
         this.camera = (OrthographicCamera) worldViewport.getCamera();
     }
 
@@ -63,16 +63,19 @@ public class CameraGestureService extends GestureDetector.GestureAdapter {
         initialZoom = camera.zoom;
     }
 
+    public void clampToWorld() {
+        clampCamera();
+        initialZoom = camera.zoom;
+    }
+
     private void clampCamera() {
+        float worldW = GameGrid.worldWidth();
+        float worldH = GameGrid.worldHeight();
+        float maxZoom = Math.min(worldW / camera.viewportWidth, worldH / camera.viewportHeight);
+        camera.zoom = Math.max(MIN_ZOOM, Math.min(camera.zoom, Math.min(MAX_ZOOM, maxZoom)));
+
         float halfW = (camera.viewportWidth * camera.zoom) / 2f;
         float halfH = (camera.viewportHeight * camera.zoom) / 2f;
-
-
-        float worldW = worldViewport.getWorldWidth();
-        float worldH = worldViewport.getWorldHeight();
-
-        if (halfW * 2f > worldW) { camera.zoom = worldW / camera.viewportWidth; halfW = worldW / 2f; }
-        if (halfH * 2f > worldH) { camera.zoom = worldH / camera.viewportHeight; halfH = worldH / 2f; }
 
         camera.position.x = Math.max(halfW, Math.min(worldW - halfW, camera.position.x));
         camera.position.y = Math.max(halfH, Math.min(worldH - halfH, camera.position.y));

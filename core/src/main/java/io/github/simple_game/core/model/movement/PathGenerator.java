@@ -21,18 +21,14 @@ public class PathGenerator {
         return GameGrid.mapCenterX();
     }
 
-    public static void generate(RoadPath path, PathType type, float worldHeight) {
-        float startY = GameGrid.snap(worldHeight + GameGrid.CELL_SIZE);
-
-        if (path.getPointCount() > 0) {
-            path.getPoint(0).set(centerX(), startY);
-            return;
-        }
+    public static void generate(RoadPath path, PathType type) {
+        int topRow = topPathRow();
+        float startY = GameGrid.cellCenterY(GameGrid.rowCount());
 
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             path.clear();
             path.addPoint(centerX(), startY);
-            path.addPoint(centerX(), GameGrid.cellCenterY(14));
+            path.addPoint(centerX(), GameGrid.cellCenterY(topRow));
 
             switch (type) {
                 case STRAIGHT_FEW_TURNS -> generateStraight(path);
@@ -40,10 +36,10 @@ public class PathGenerator {
                 case WITH_LOOPS         -> generateWithLoops(path);
             }
 
-            path.addPoint(centerX(), GameGrid.cellCenterY(2));
+            path.addPoint(centerX(), GameGrid.cellCenterY(bottomPathRow()));
             path.addPoint(centerX(), -GameGrid.CELL_SIZE);
 
-            if (hasValidSpacing(path, worldHeight)) {
+            if (hasValidSpacing(path)) {
                 return;
             }
         }
@@ -51,21 +47,29 @@ public class PathGenerator {
         // Запасной простой маршрут без параллельных конфликтов
         path.clear();
         path.addPoint(centerX(), startY);
-        path.addPoint(centerX(), GameGrid.cellCenterY(14));
+        path.addPoint(centerX(), GameGrid.cellCenterY(topRow));
         generateFallback(path);
-        path.addPoint(centerX(), GameGrid.cellCenterY(2));
+        path.addPoint(centerX(), GameGrid.cellCenterY(bottomPathRow()));
         path.addPoint(centerX(), -GameGrid.CELL_SIZE);
+    }
+
+    private static int topPathRow() {
+        return GameGrid.rowCount() - 2;
+    }
+
+    private static int bottomPathRow() {
+        return 2;
     }
 
     private static void generateFallback(RoadPath path) {
         int cc = centerCol();
         int leftCol = Math.max(1, cc - MIN_TRACK_GAP);
         int rightCol = Math.min(GameGrid.columnCount() - 2, cc + MIN_TRACK_GAP);
-        float midY = GameGrid.cellCenterY(10);
-        path.addPoint(GameGrid.cellCenterX(leftCol), GameGrid.cellCenterY(14));
+        float midY = GameGrid.cellCenterY(GameGrid.rowCount() / 2 + 2);
+        path.addPoint(GameGrid.cellCenterX(leftCol), GameGrid.cellCenterY(topPathRow()));
         path.addPoint(GameGrid.cellCenterX(leftCol), midY);
         path.addPoint(GameGrid.cellCenterX(rightCol), midY);
-        path.addPoint(GameGrid.cellCenterX(rightCol), GameGrid.cellCenterY(2));
+        path.addPoint(GameGrid.cellCenterX(rightCol), GameGrid.cellCenterY(bottomPathRow()));
     }
 
     private static void generateStraight(RoadPath path) {
@@ -76,12 +80,14 @@ public class PathGenerator {
 
         int leftCol = MathUtils.random(1, Math.max(1, leftMax));
         int rightCol = MathUtils.random(Math.min(cols - 2, rightMin), cols - 2);
-        float midY = GameGrid.cellCenterY(MathUtils.random(8, 11));
+        int midMin = Math.max(bottomPathRow() + 4, GameGrid.rowCount() / 2);
+        int midMax = Math.max(midMin, topPathRow() - 3);
+        float midY = GameGrid.cellCenterY(MathUtils.random(midMin, midMax));
 
-        path.addPoint(GameGrid.cellCenterX(leftCol), GameGrid.cellCenterY(14));
+        path.addPoint(GameGrid.cellCenterX(leftCol), GameGrid.cellCenterY(topPathRow()));
         path.addPoint(GameGrid.cellCenterX(leftCol), midY);
         path.addPoint(GameGrid.cellCenterX(rightCol), midY);
-        path.addPoint(GameGrid.cellCenterX(rightCol), GameGrid.cellCenterY(2));
+        path.addPoint(GameGrid.cellCenterX(rightCol), GameGrid.cellCenterY(bottomPathRow()));
     }
 
     private static void generateManyTurns(RoadPath path) {
@@ -90,9 +96,9 @@ public class PathGenerator {
         int leftMax = Math.min(2, cc - MIN_TRACK_GAP);
         int rightMin = Math.max(cols - 3, cc + MIN_TRACK_GAP);
 
-        int currentRow = 14;
+        int currentRow = topPathRow();
         boolean turnRight = false;
-        while (currentRow > 4) {
+        while (currentRow > bottomPathRow() + 2) {
             int col = turnRight
                     ? MathUtils.random(Math.min(cols - 2, rightMin), cols - 2)
                     : MathUtils.random(1, Math.max(1, leftMax));
@@ -110,7 +116,7 @@ public class PathGenerator {
         int cc = centerCol();
         int cols = GameGrid.columnCount();
         int pocketsCount = MathUtils.random(1, 2);
-        int currentRow = 14;
+        int currentRow = topPathRow();
 
         for (int i = 0; i < pocketsCount; i++) {
             boolean loopToLeft = MathUtils.randomBoolean();
@@ -152,13 +158,13 @@ public class PathGenerator {
             currentRow = bottomRow - 2;
         }
 
-        path.addPoint(centerX(), GameGrid.cellCenterY(2));
+        path.addPoint(centerX(), GameGrid.cellCenterY(bottomPathRow()));
     }
 
     /** Проверяет, что соседние параллельные участки не идут вплотную друг к другу. */
-    static boolean hasValidSpacing(RoadPath path, float worldHeight) {
+    static boolean hasValidSpacing(RoadPath path) {
         int cols = GameGrid.columnCount();
-        int rows = (int) (worldHeight / GameGrid.CELL_SIZE) + 1;
+        int rows = GameGrid.rowCount();
         boolean[][] road = new boolean[cols][rows];
         GameGrid.fillRoadMask(road, path);
 

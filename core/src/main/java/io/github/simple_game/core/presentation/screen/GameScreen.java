@@ -7,16 +7,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.simple_game.core.Main;
 import io.github.simple_game.core.model.movement.PathType;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.presentation.GameViewport;
+import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.service.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.InteractionService;
-import io.github.simple_game.core.model.movement.PathGenerator; // ИСПРАВЛЕНО: Правильный сервисный импорт
+import io.github.simple_game.core.model.movement.PathGenerator;
 
 public class GameScreen extends ScreenAdapter {
     private final Main game;
@@ -41,7 +43,7 @@ public class GameScreen extends ScreenAdapter {
     public void show() {
         if (gameLoop == null) {
             worldCamera = new OrthographicCamera();
-            worldViewport = new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, worldCamera);
+            worldViewport = new FitViewport(GameGrid.worldWidth(), GameGrid.worldHeight(), worldCamera);
             uiCamera = new OrthographicCamera();
             uiViewport = new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, uiCamera);
 
@@ -64,6 +66,7 @@ public class GameScreen extends ScreenAdapter {
 
             PathType[] types = PathType.values();
             this.activeMapType = types[com.badlogic.gdx.math.MathUtils.random(0, types.length - 1)];
+            PathGenerator.generate(gameLoop.getRoadPath(), activeMapType);
         }
 
         initInputProcessing();
@@ -103,22 +106,30 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void resize(int width, int height) {
-        worldViewport.update(width, height, false);
-
-        float worldW = worldViewport.getWorldWidth();
-        float worldH = worldViewport.getWorldHeight();
-
-        worldCamera.position.set(worldW / 2f, worldH / 2f, 0);
-        worldCamera.update();
-
-        rebuildDynamicPath(worldH);
-
         uiViewport.update(width, height, true);
-    }
+        gameInterface.validateLayout();
 
-    private void rebuildDynamicPath(float worldHeight) {
-        io.github.simple_game.core.model.movement.RoadPath path = gameLoop.getRoadPath();
-        PathGenerator.generate(path, activeMapType, worldHeight);
+        float uiWorldH = uiViewport.getWorldHeight();
+        int uiScreenX = uiViewport.getScreenX();
+        int uiScreenY = uiViewport.getScreenY();
+        int uiScreenW = uiViewport.getScreenWidth();
+        int uiScreenH = uiViewport.getScreenHeight();
+
+        int topPx = Math.round(gameInterface.getTopInset() / uiWorldH * uiScreenH);
+        int bottomPx = Math.round(gameInterface.getBottomInset() / uiWorldH * uiScreenH);
+        int playH = Math.max(1, uiScreenH - topPx - bottomPx);
+
+        worldViewport.update(uiScreenW, playH, false);
+        worldViewport.setScreenPosition(
+                uiScreenX + worldViewport.getScreenX(),
+                uiScreenY + bottomPx + worldViewport.getScreenY()
+        );
+
+        worldCamera.position.set(GameGrid.worldWidth() / 2f, GameGrid.worldHeight() / 2f, 0);
+        if (cameraGestureService != null) {
+            cameraGestureService.clampToWorld();
+        }
+        worldCamera.update();
     }
 
     @Override

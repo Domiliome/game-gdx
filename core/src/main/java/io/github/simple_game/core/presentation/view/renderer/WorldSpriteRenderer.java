@@ -41,10 +41,10 @@ public class WorldSpriteRenderer {
         }
     }
 
-    public void renderBackground(SpriteBatch batch, float worldHeight) {
+    public void renderBackground(SpriteBatch batch) {
         var roadPath = gameLoop.getRoadPath();
         int cols = GameGrid.columnCount();
-        int rows = (int) (worldHeight / GameGrid.CELL_SIZE) + 1;
+        int rows = GameGrid.rowCount();
         boolean[][] isRoad = new boolean[cols][rows];
 
         GameGrid.fillRoadMask(isRoad, roadPath);

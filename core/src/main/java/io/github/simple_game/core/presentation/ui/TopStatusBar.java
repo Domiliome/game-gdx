@@ -2,6 +2,7 @@ package io.github.simple_game.core.presentation.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -25,11 +26,18 @@ public class TopStatusBar extends Table {
     private final GameLoop gameLoop;
     private final Label waveLabel, statusLabel, economyLabel;
     private final Image startButton, bagImage;
-    private final Texture backpackTex, startTex, pauseTex;
+    private final Texture backpackTex, startTex, pauseTex, backgroundTex;
     private final TextureRegionDrawable startDrawable, pauseDrawable;
 
     public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
         this.gameLoop = gameLoop;
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(new Color(0.12f, 0.12f, 0.12f, 1f));
+        pixmap.fill();
+        backgroundTex = new Texture(pixmap);
+        pixmap.dispose();
+        this.setBackground(new TextureRegionDrawable(backgroundTex));
 
         backpackTex = new Texture(Gdx.files.internal("ui/icons/backpack.png"));
         startTex = new Texture(Gdx.files.internal("ui/icons/start.png"));
@@ -116,6 +124,7 @@ public class TopStatusBar extends Table {
     }
 
     public void dispose() {
+        if (backgroundTex != null) backgroundTex.dispose();
         if (backpackTex != null) backpackTex.dispose();
         if (startTex != null) startTex.dispose();
         if (pauseTex != null) pauseTex.dispose();

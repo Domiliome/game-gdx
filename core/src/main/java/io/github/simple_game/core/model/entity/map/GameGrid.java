@@ -10,6 +10,10 @@ import io.github.simple_game.core.service.GameLoop;
 public class GameGrid {
     /** Размер клетки застройки в мировых координатах. */
     public static final int CELL_SIZE = 48;
+    /** Фиксированное число колонок игрового поля. */
+    public static final int COLS = (int) (GameViewport.WIDTH / CELL_SIZE);
+    /** Фиксированное число рядов игрового поля. */
+    public static final int ROWS = (int) (GameViewport.HEIGHT / CELL_SIZE);
 
     private final RoadPath roadPath;
 
@@ -30,7 +34,23 @@ public class GameGrid {
     }
 
     public static int columnCount() {
-        return (int) (GameViewport.WIDTH / CELL_SIZE);
+        return COLS;
+    }
+
+    public static int rowCount() {
+        return ROWS;
+    }
+
+    public static float worldWidth() {
+        return COLS * CELL_SIZE;
+    }
+
+    public static float worldHeight() {
+        return ROWS * CELL_SIZE;
+    }
+
+    public static boolean containsCell(int col, int row) {
+        return col >= 0 && col < COLS && row >= 0 && row < ROWS;
     }
 
     /** Центральная колонка карты — все координаты пути должны проходить через неё. */
@@ -95,7 +115,9 @@ public class GameGrid {
     }
 
     public boolean isCellBuildable(float snappedX, float snappedY, GameLoop gameLoop) {
-        if (snappedX < 0 || snappedX > GameViewport.WIDTH || snappedY < 0) return false;
+        int col = worldToCol(snappedX);
+        int row = worldToRow(snappedY);
+        if (!containsCell(col, row)) return false;
 
         for (Tower existingTower : gameLoop.getTowers()) {
             float distance = existingTower.getPosition().dst(snappedX, snappedY);
@@ -104,8 +126,6 @@ public class GameGrid {
             }
         }
 
-        int col = worldToCol(snappedX);
-        int row = worldToRow(snappedY);
         if (isRoadCell(col, row, roadPath)) {
             return false;
         }

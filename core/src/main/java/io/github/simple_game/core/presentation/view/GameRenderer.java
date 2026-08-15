@@ -44,32 +44,24 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        float currentWorldHeight = camera.viewportHeight;
         boolean isDraggingActive = interactionService != null &&
                                    interactionService.getDragAndDropManager().isDragging();
 
-        // 1. СЛОЙ ЗЕМЛИ (САМОЕ ДНО): Рисуем коричневую карту на весь экран
         batch.begin();
-        worldSpriteRenderer.renderBackground(batch, currentWorldHeight);
+        worldSpriteRenderer.renderBackground(batch);
         batch.end();
 
-
-
-        // 3. СЛОЙ БАШЕН (ПОВЕРХ АСФАЛЬТА): Открываем батч заново и накрываем дорогу башнями 64х64!
         batch.begin();
         worldSpriteRenderer.renderTowers(batch);
         batch.end();
 
-        // 4. СЛОЙ ИГРОВЫХ СУЩНОСТЕЙ (НАД БАШНЯМИ): Желтые мобы, золотые пули и сетка
-        debugGridRenderer.renderGridAndRadius(shapeRenderer, currentWorldHeight, isDraggingActive);
+        debugGridRenderer.renderGridAndRadius(shapeRenderer, isDraggingActive);
         entityRenderer.render(shapeRenderer);
 
-        // Прозрачность для полосок здоровья
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         healthBarRenderer.render(shapeRenderer, batch);
 
-        // Фантом под пальцем во время перетаскивания из магазина
         if (isDraggingActive) {
             interactionService.getDragAndDropManager().drawPreview(shapeRenderer);
             renderGhostPhantom();
