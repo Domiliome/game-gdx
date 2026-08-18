@@ -1,5 +1,6 @@
 package io.github.simple_game.core.model.entity.map;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import io.github.simple_game.core.model.movement.RoadPath;
@@ -14,6 +15,7 @@ public class GameGrid {
     public static final int COLS = (int) (GameViewport.WIDTH / CELL_SIZE);
     /** Фиксированное число рядов игрового поля. */
     public static final int ROWS = (int) (GameViewport.HEIGHT / CELL_SIZE);
+    public static final int OTHER_STRAIGHT_COUNT = 3;
 
     private final RoadPath roadPath;
 
@@ -92,6 +94,47 @@ public class GameGrid {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Для каждой клетки пути: 60% обычная текстура, 40% — случайный из трёх other-вариантов.
+     */
+    public static void fillStraightVariants(int[][] variant, RoadPath roadPath) {
+        int cols = variant.length;
+        int rows = variant[0].length;
+        boolean[][] visited = new boolean[cols][rows];
+
+        for (int i = 0; i < roadPath.getPointCount() - 1; i++) {
+            Vector2 p1 = roadPath.getPoint(i);
+            Vector2 p2 = roadPath.getPoint(i + 1);
+            int c1 = worldToCol(p1.x);
+            int r1 = worldToRow(p1.y);
+            int c2 = worldToCol(p2.x);
+            int r2 = worldToRow(p2.y);
+
+            if (r1 == r2 && c1 != c2) {
+                int step = Integer.compare(c2, c1);
+                for (int c = c1; c != c2 + step; c += step) {
+                    markStraightVariant(variant, visited, c, r1, cols, rows);
+                }
+            } else if (c1 == c2 && r1 != r2) {
+                int step = Integer.compare(r2, r1);
+                for (int r = r1; r != r2 + step; r += step) {
+                    markStraightVariant(variant, visited, c1, r, cols, rows);
+                }
+            }
+        }
+    }
+
+    private static void markStraightVariant(int[][] variant, boolean[][] visited,
+                                            int col, int row, int cols, int rows) {
+        if (col < 0 || col >= cols || row < 0 || row >= rows || visited[col][row]) {
+            return;
+        }
+        visited[col][row] = true;
+        if (MathUtils.randomBoolean(0.4f)) {
+            variant[col][row] = MathUtils.random(1, OTHER_STRAIGHT_COUNT);
         }
     }
 

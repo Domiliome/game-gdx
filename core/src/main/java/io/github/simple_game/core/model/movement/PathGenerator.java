@@ -40,6 +40,7 @@ public class PathGenerator {
             path.addPoint(centerX(), -GameGrid.CELL_SIZE);
 
             if (hasValidSpacing(path)) {
+                assignStraightTextures(path);
                 return;
             }
         }
@@ -51,6 +52,13 @@ public class PathGenerator {
         generateFallback(path);
         path.addPoint(centerX(), GameGrid.cellCenterY(bottomPathRow()));
         path.addPoint(centerX(), -GameGrid.CELL_SIZE);
+        assignStraightTextures(path);
+    }
+
+    private static void assignStraightTextures(RoadPath path) {
+        int[][] variants = new int[GameGrid.columnCount()][GameGrid.rowCount()];
+        GameGrid.fillStraightVariants(variants, path);
+        path.setStraightVariants(variants);
     }
 
     private static int topPathRow() {

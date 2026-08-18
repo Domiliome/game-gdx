@@ -9,6 +9,8 @@ import com.badlogic.gdx.utils.Array;
  */
 public class RoadPath {
     private final Array<Vector2> points;
+    /** 0 — обычная прямая, 1..3 — варианты road_straight_other. */
+    private int[][] straightVariant;
 
     /**
      * Создает новый пустой маршрут движения.
@@ -47,5 +49,17 @@ public class RoadPath {
     }
     public void clear() {
         this.points.clear();
+        this.straightVariant = null;
+    }
+
+    public void setStraightVariants(int[][] straightVariant) {
+        this.straightVariant = straightVariant;
+    }
+
+    public int getStraightVariant(int col, int row) {
+        if (straightVariant == null) return 0;
+        if (col < 0 || row < 0 || col >= straightVariant.length) return 0;
+        if (row >= straightVariant[col].length) return 0;
+        return straightVariant[col][row];
     }
 }
