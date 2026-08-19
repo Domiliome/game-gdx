@@ -98,7 +98,7 @@ public class GameGrid {
     }
 
     /**
-     * Для каждой клетки пути: 60% обычная текстура, 40% — случайный из трёх other-вариантов.
+     * Для каждой клетки пути: 30% обычная текстура, 70% — случайный из трёх other-вариантов.
      */
     public static void fillStraightVariants(int[][] variant, RoadPath roadPath) {
         int cols = variant.length;
@@ -133,7 +133,7 @@ public class GameGrid {
             return;
         }
         visited[col][row] = true;
-        if (MathUtils.randomBoolean(0.4f)) {
+        if (MathUtils.randomBoolean(0.7f)) {
             variant[col][row] = MathUtils.random(1, OTHER_STRAIGHT_COUNT);
         }
     }
