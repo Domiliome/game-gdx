@@ -2,7 +2,7 @@ package io.github.simple_game.core.model.entity.tower;
 
 import java.util.Locale;
 
-import io.github.simple_game.core.service.GameLoop;
+import io.github.simple_game.core.model.CombatWorld;
 
 /**
  * Каталог башен: одна запись = тип в магазине + текстура + скорость снаряда + фабрика.
@@ -40,11 +40,15 @@ public enum TowerType {
         return "card/" + name().toLowerCase(Locale.ROOT) + "_card.png";
     }
 
+    public String getInitTexturePath() {
+        return "towers/" + name().toLowerCase(Locale.ROOT) + "_init.png";
+    }
+
     public float getProjectileSpeed() {
         return projectileSpeed;
     }
 
-    public Tower create(float x, float y, GameLoop gameLoop) {
-        return factory.create(x, y, gameLoop);
+    public Tower create(float x, float y, CombatWorld world) {
+        return factory.create(x, y, world);
     }
 }

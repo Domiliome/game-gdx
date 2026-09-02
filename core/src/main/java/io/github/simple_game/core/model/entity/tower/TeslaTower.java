@@ -4,10 +4,9 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.CurrencyManager;
-import io.github.simple_game.core.service.GameLoop;
 
 /**
  * Тесла-столб. Одна башня ничего не делает: нужна пара в радиусе связи.
@@ -22,13 +21,12 @@ public class TeslaTower extends Tower {
     private TeslaTower partner;
     private float beamTimer = 0f;
 
-    public TeslaTower(float x, float y, GameLoop gameLoop) {
-        super(x, y, TowerType.TESLA, gameLoop);
+    public TeslaTower(float x, float y, CombatWorld world) {
+        super(x, y, TowerType.TESLA, world);
         this.damage = BASE_DAMAGE;
         // attackRange = радиус поиска партнёра (круг при выборе башни)
         this.attackRange = BASE_LINK_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        loadInitAnimation("towers/tesla_init.png");
     }
 
     @Override
@@ -58,7 +56,7 @@ public class TeslaTower extends Tower {
         TeslaTower nearest = null;
         float nearestDist = Float.MAX_VALUE;
 
-        Array<Tower> towers = gameLoop.getTowers();
+        Array<Tower> towers = world.getTowers();
         for (int i = 0; i < towers.size; i++) {
             Tower tower = towers.get(i);
             if (tower == this || !(tower instanceof TeslaTower candidate)) {
@@ -85,7 +83,7 @@ public class TeslaTower extends Tower {
     }
 
     private boolean isValidPartner(TeslaTower other) {
-        if (!gameLoop.getTowers().contains(other, true)) {
+        if (!world.getTowers().contains(other, true)) {
             return false;
         }
         if (other.isInitializing()) {
@@ -113,7 +111,6 @@ public class TeslaTower extends Tower {
     private void damageEnemiesOnBeam(Array<Enemy> enemies) {
         Vector2 a = position;
         Vector2 b = partner.getPosition();
-        CurrencyManager economy = gameLoop.getCurrencyManager();
 
         for (int i = 0; i < enemies.size; i++) {
             Enemy enemy = enemies.get(i);
@@ -124,7 +121,7 @@ public class TeslaTower extends Tower {
                     a.x, a.y, b.x, b.y,
                     enemy.getPosition().x, enemy.getPosition().y);
             if (dist <= BEAM_HALF_WIDTH) {
-                enemy.takeDamage(damage, economy);
+                enemy.takeDamage(damage);
             }
         }
     }

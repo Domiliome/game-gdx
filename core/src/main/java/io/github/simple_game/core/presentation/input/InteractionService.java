@@ -1,4 +1,4 @@
-package io.github.simple_game.core.service;
+package io.github.simple_game.core.presentation.input;
 
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector3;
@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.tower.Tower;
+import io.github.simple_game.core.service.GameLoop;
 
 public class InteractionService extends GestureDetector.GestureAdapter {
     private final GameLoop gameLoop;

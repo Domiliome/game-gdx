@@ -19,12 +19,14 @@ public class EntityManager {
     public void updateEntities(float deltaTime, CurrencyManager currencyManager, InventoryManager inventoryManager) {
         for (int i = enemies.size - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
-            enemy.update(deltaTime, currencyManager);
+            enemy.update(deltaTime);
 
             if (!enemy.isActive()) {
                 if (enemy.getHealth() <= 0) {
                     currencyManager.addGold(enemy.getGoldReward());
                     inventoryManager.calculateLootDrop(enemy);
+                } else {
+                    currencyManager.decreaseLives(1);
                 }
                 enemies.removeIndex(i);
             }
@@ -39,7 +41,7 @@ public class EntityManager {
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
 
-            projectile.update(deltaTime, currencyManager);
+            projectile.update(deltaTime);
 
             if (!projectile.isActive()) {
                 projectiles.removeIndex(i);

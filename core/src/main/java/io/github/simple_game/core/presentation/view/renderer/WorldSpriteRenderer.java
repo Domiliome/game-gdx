@@ -23,6 +23,7 @@ public class WorldSpriteRenderer {
     private final TextureRegion roadStraight, roadTurn;
     private final TextureRegion[] roadStraightOthers = new TextureRegion[ROAD_STRAIGHT_OTHER_PATHS.length];
     private final ObjectMap<TowerType, Texture> towerTextures = new ObjectMap<>();
+    private final TowerSprites towerSprites;
 
     private static final int TOWER_VISUAL_SIZE = GameGrid.CELL_SIZE * 2;
 
@@ -52,6 +53,7 @@ public class WorldSpriteRenderer {
             texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
             towerTextures.put(type, texture);
         }
+        this.towerSprites = new TowerSprites();
     }
 
     public void renderBackground(SpriteBatch batch) {
@@ -125,7 +127,7 @@ public class WorldSpriteRenderer {
             float drawY = tower.getPosition().y - (TOWER_VISUAL_SIZE / 2f);
 
             if (tower.isInitializing()) {
-                TextureRegion currentFrame = tower.getCurrentInitFrame();
+                TextureRegion currentFrame = towerSprites.getInitFrame(tower.getType(), tower.getAnimationTime());
                 if (currentFrame != null) {
                     batch.draw(currentFrame, drawX, drawY, TOWER_VISUAL_SIZE, TOWER_VISUAL_SIZE);
                     continue;
@@ -151,5 +153,6 @@ public class WorldSpriteRenderer {
             texture.dispose();
         }
         towerTextures.clear();
+        towerSprites.dispose();
     }
 }

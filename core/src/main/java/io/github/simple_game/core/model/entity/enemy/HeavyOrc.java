@@ -7,11 +7,11 @@ public class HeavyOrc extends Enemy {
         this.speed = 40f * speedMod;
         this.goldReward = 60;
         this.tier = EnemyTier.TIER_3_HEAVY;
-        initSprite(getSpritePath(), getDefaultVisualScale());
+        initSprite(getDefaultVisualScale());
     }
 
     @Override
-    protected String getSpritePath() {
+    public String getSpritePath() {
         return "enemies/orc.png";
     }
 

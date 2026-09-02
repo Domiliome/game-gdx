@@ -1,4 +1,4 @@
-package io.github.simple_game.core.service;
+package io.github.simple_game.core.presentation.input;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
@@ -23,7 +23,7 @@ public class CameraGestureService extends GestureDetector.GestureAdapter {
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-        velocity.set(0, 0); // Останавливаем инерцию при новом касании карты
+        velocity.set(0, 0);
         return false;
     }
 

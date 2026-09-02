@@ -2,9 +2,9 @@ package io.github.simple_game.core.model.entity.tower;
 
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.projectile.Arrow;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.GameLoop;
 
 public class ArcherTower extends Tower {
     private static final float BASE_DAMAGE = 15f;
@@ -16,12 +16,11 @@ public class ArcherTower extends Tower {
     private float critChance = 0.20f;
     private final float critDamageMultiplier = 2.0f;
 
-    public ArcherTower(float x, float y, GameLoop gameLoop) {
-        super(x, y, TowerType.ARCHER, gameLoop);
+    public ArcherTower(float x, float y, CombatWorld world) {
+        super(x, y, TowerType.ARCHER, world);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        loadInitAnimation("towers/archer_init.png");
     }
 
     @Override

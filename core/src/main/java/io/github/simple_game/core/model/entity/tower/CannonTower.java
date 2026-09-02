@@ -2,9 +2,9 @@ package io.github.simple_game.core.model.entity.tower;
 
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.projectile.CannonBall;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.GameLoop;
 
 /**
  * Артиллерийская пушка. Обладает сокрушительным разовым уроном.
@@ -18,12 +18,11 @@ public class CannonTower extends Tower {
     private final float rangeMultiplier = 1.08f;
     private final float cooldownReduction = 1.0f;
 
-    public CannonTower(float x, float y, GameLoop gameLoop) {
-        super(x, y, TowerType.CANNON, gameLoop);
+    public CannonTower(float x, float y, CombatWorld world) {
+        super(x, y, TowerType.CANNON, world);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        loadInitAnimation("towers/cannon_init.png");
     }
 
     @Override
@@ -49,7 +48,7 @@ public class CannonTower extends Tower {
 
     @Override
     protected void shoot(Array<Projectile> projectilesToSpawn) {
-        Projectile cannonBall = new CannonBall(position.x, position.y, target, damage, type, gameLoop);
+        Projectile cannonBall = new CannonBall(position.x, position.y, target, damage, type, world.getEnemies());
         projectilesToSpawn.add(cannonBall);
         System.out.println("Пушка бабахнула! Нанесено " + damage + " ед. урона по площади");
     }

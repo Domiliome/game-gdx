@@ -1,4 +1,4 @@
-package io.github.simple_game.core.service;
+package io.github.simple_game.core.presentation.input;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -8,6 +8,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.simple_game.core.model.entity.map.GameGrid;
 import io.github.simple_game.core.model.entity.tower.Tower;
 import io.github.simple_game.core.model.entity.tower.TowerType;
+import io.github.simple_game.core.service.CurrencyManager;
+import io.github.simple_game.core.service.GameLoop;
 
 public class DragAndDropManager {
     private final GameLoop gameLoop;
@@ -45,7 +47,7 @@ public class DragAndDropManager {
         float snappedY = GameGrid.snap(currentY);
         CurrencyManager economy = gameLoop.getCurrencyManager();
         boolean placed = false;
-        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
+        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop.getTowers())) {
             if (economy.spendGold(draggingType.getCost())) {
                 gameLoop.addTower(draggingType.create(snappedX, snappedY, gameLoop));
                 placed = true;
@@ -62,7 +64,7 @@ public class DragAndDropManager {
         float snappedY = GameGrid.snap(currentY);
         float half = GameGrid.CELL_SIZE / 2f;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop)) {
+        if (gameLoop.getGameGrid().isCellBuildable(snappedX, snappedY, gameLoop.getTowers())) {
             shapeRenderer.setColor(new Color(0, 1, 0, 0.3f));
         } else {
             shapeRenderer.setColor(new Color(1, 0, 0, 0.3f));

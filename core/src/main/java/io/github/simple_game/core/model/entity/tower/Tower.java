@@ -1,20 +1,19 @@
 package io.github.simple_game.core.model.entity.tower;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.Entity;
 import io.github.simple_game.core.model.entity.enemy.Enemy;
 import io.github.simple_game.core.model.entity.items.Item;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.GameLoop;
 
 public abstract class Tower extends Entity {
+    /** Окно спавна, пока башня не стреляет. Кадры появления рисует презентация. */
+    private static final float INIT_DURATION = 0.48f;
+
     protected final TowerType type;
-    protected final GameLoop gameLoop;
+    protected final CombatWorld world;
     protected int currentLevel = 1;
     protected int maxLevel = 5;
 
@@ -29,31 +28,18 @@ public abstract class Tower extends Entity {
 
     protected Enemy target;
 
-    protected Animation<TextureRegion> initAnimation;
     protected float animationTime = 0f;
     protected boolean isInitializing = true;
 
-    public Tower(float x, float y, TowerType type, GameLoop gameLoop) {
+    public Tower(float x, float y, TowerType type, CombatWorld world) {
         super(x, y);
         this.type = type;
-        this.gameLoop = gameLoop;
+        this.world = world;
     }
 
     public abstract void tryUpgrade();
     public abstract int getUpgradeCost();
     protected abstract void shoot(Array<Projectile> projectilesToSpawn);
-
-    /**
-     * Загружает горизонтальный spritesheet появления (кадры 32×32).
-     */
-    protected void loadInitAnimation(String assetPath) {
-        Texture sheet = new Texture(Gdx.files.internal(assetPath));
-        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
-        int totalFrames = tmp[0].length;
-        TextureRegion[] animationFrames = new TextureRegion[totalFrames];
-        System.arraycopy(tmp[0], 0, animationFrames, 0, totalFrames);
-        this.initAnimation = new Animation<>(0.06f, animationFrames);
-    }
 
     public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
         if (baseDamage == 0 && damage > 0) {
@@ -64,7 +50,7 @@ public abstract class Tower extends Entity {
 
         if (isInitializing) {
             animationTime += deltaTime;
-            if (initAnimation != null && initAnimation.isAnimationFinished(animationTime)) {
+            if (animationTime >= INIT_DURATION) {
                 isInitializing = false;
             }
             return;
@@ -74,7 +60,7 @@ public abstract class Tower extends Entity {
         this.attackRange = baseAttackRange;
         this.attackCooldown = baseAttackCooldown;
 
-        for (Item item : gameLoop.getInventoryManager().getEquippedSlots()) {
+        for (Item item : world.getEquippedItems()) {
             item.applyEffect(this);
         }
 
@@ -126,9 +112,7 @@ public abstract class Tower extends Entity {
 
     public boolean isInitializing() { return isInitializing; }
 
-    public TextureRegion getCurrentInitFrame() {
-        return initAnimation != null ? initAnimation.getKeyFrame(animationTime) : null;
-    }
+    public float getAnimationTime() { return animationTime; }
 
     public float getDynamicRange() { return attackRange; }
     public void setDynamicRange(float r) { this.attackRange = r; }

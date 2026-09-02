@@ -2,9 +2,9 @@ package io.github.simple_game.core.model.entity.tower;
 
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.projectile.PoisonBolt;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.GameLoop;
 
 /**
  * Ядовитая башня. Слабый разовый удар, но сильный урон со временем (DoT).
@@ -19,12 +19,11 @@ public class PoisonTower extends Tower {
     private float poisonDps = BASE_POISON_DPS;
     private float poisonDuration = BASE_POISON_DURATION;
 
-    public PoisonTower(float x, float y, GameLoop gameLoop) {
-        super(x, y, TowerType.POISON, gameLoop);
+    public PoisonTower(float x, float y, CombatWorld world) {
+        super(x, y, TowerType.POISON, world);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        loadInitAnimation("towers/poison_init.png");
     }
 
     @Override

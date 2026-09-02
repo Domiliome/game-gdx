@@ -25,21 +25,21 @@ import io.github.simple_game.core.presentation.GameViewport;
 import io.github.simple_game.core.presentation.ui.BackpackGrid;
 import io.github.simple_game.core.presentation.ui.EquipmentPanel;
 import io.github.simple_game.core.presentation.ui.ForgePanel;
-import io.github.simple_game.core.service.GameLoop;
+import io.github.simple_game.core.service.InventoryManager;
 
 public class InventoryScreen extends ScreenAdapter {
     private final Main game;
     private final Screen previousScreen;
-    private final GameLoop gameLoop;
+    private final InventoryManager inventory;
     private final Stage stage;
     private final Texture btnBg, slotBg, activeBg, forgeBg;
     private final TextureRegionDrawable slotDrawable, activeDrawable, forgeDrawable;
     private Label descLabel;
 
-    public InventoryScreen(Main game, Screen previousScreen, GameLoop gameLoop) {
+    public InventoryScreen(Main game, Screen previousScreen, InventoryManager inventory) {
         this.game = game;
         this.previousScreen = previousScreen;
-        this.gameLoop = gameLoop;
+        this.inventory = inventory;
         this.stage = new Stage(new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, new OrthographicCamera()));
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(new Color(0.3f, 0.3f, 0.3f, 1f));
@@ -61,7 +61,7 @@ public class InventoryScreen extends ScreenAdapter {
     public void show() {
         Gdx.input.setInputProcessor(stage);
         stage.clear();
-        var inv = this.gameLoop.getInventoryManager();
+        var inv = this.inventory;
         DragAndDrop dad = new DragAndDrop();
 
         Label.LabelStyle tStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);

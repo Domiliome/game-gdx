@@ -68,7 +68,7 @@ public class MainMenuScreen extends ScreenAdapter {
         bagBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new InventoryScreen(game, MainMenuScreen.this, game.getGlobalInventoryGameLoop()));
+                game.setScreen(new InventoryScreen(game, MainMenuScreen.this, game.getGlobalInventory()));
             }
         });
         table.add(bagBtn).size(280, 58).padBottom(14).row();

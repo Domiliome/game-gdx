@@ -7,11 +7,11 @@ public class NormalZombie extends Enemy {
         this.speed = 70f * speedMod;
         this.goldReward = 25;
         this.tier = EnemyTier.TIER_2_NORMAL;
-        initSprite(getSpritePath(), getDefaultVisualScale());
+        initSprite(getDefaultVisualScale());
     }
 
     @Override
-    protected String getSpritePath() {
+    public String getSpritePath() {
         return "enemies/zombie.png";
     }
 }

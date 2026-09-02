@@ -2,21 +2,20 @@ package io.github.simple_game.core.model.entity.tower;
 
 import com.badlogic.gdx.utils.Array;
 
+import io.github.simple_game.core.model.CombatWorld;
 import io.github.simple_game.core.model.entity.projectile.MagicSphere;
 import io.github.simple_game.core.model.entity.projectile.Projectile;
-import io.github.simple_game.core.service.GameLoop;
 
 public class MagicTower extends Tower {
     private static final float BASE_DAMAGE = 10f;
     private static final float BASE_RANGE = 130f;
     private static final float BASE_COOLDOWN = 1.2f;
 
-    public MagicTower(float x, float y, GameLoop gameLoop) {
-        super(x, y, TowerType.MAGIC, gameLoop);
+    public MagicTower(float x, float y, CombatWorld world) {
+        super(x, y, TowerType.MAGIC, world);
         this.damage = BASE_DAMAGE;
         this.attackRange = BASE_RANGE;
         this.attackCooldown = BASE_COOLDOWN;
-        loadInitAnimation("towers/magic_init.png");
     }
 
     @Override

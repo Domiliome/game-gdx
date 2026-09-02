@@ -1,4 +1,4 @@
-package io.github.simple_game.core.model.entity.enemy;
+package io.github.simple_game.core.presentation.view.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

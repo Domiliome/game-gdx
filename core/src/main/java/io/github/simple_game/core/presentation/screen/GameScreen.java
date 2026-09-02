@@ -10,15 +10,13 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.simple_game.core.Main;
-import io.github.simple_game.core.model.movement.PathType;
 import io.github.simple_game.core.presentation.view.GameInterface;
 import io.github.simple_game.core.presentation.view.GameRenderer;
 import io.github.simple_game.core.presentation.GameViewport;
 import io.github.simple_game.core.model.entity.map.GameGrid;
-import io.github.simple_game.core.service.CameraGestureService;
+import io.github.simple_game.core.presentation.input.CameraGestureService;
 import io.github.simple_game.core.service.GameLoop;
-import io.github.simple_game.core.service.InteractionService;
-import io.github.simple_game.core.model.movement.PathGenerator;
+import io.github.simple_game.core.presentation.input.InteractionService;
 
 public class GameScreen extends ScreenAdapter {
     private final Main game;
@@ -33,8 +31,6 @@ public class GameScreen extends ScreenAdapter {
     private InteractionService interactionService;
     private CameraGestureService cameraGestureService;
 
-    private PathType activeMapType;
-
     public GameScreen(Main game) {
         this.game = game;
     }
@@ -47,7 +43,7 @@ public class GameScreen extends ScreenAdapter {
             uiCamera = new OrthographicCamera();
             uiViewport = new ExtendViewport(GameViewport.WIDTH, GameViewport.HEIGHT, uiCamera);
 
-            gameLoop = new GameLoop(game);
+            gameLoop = new GameLoop(game.getGlobalInventory());
 
             interactionService = new InteractionService(gameLoop, worldViewport);
             cameraGestureService = new CameraGestureService(worldViewport);
@@ -55,7 +51,8 @@ public class GameScreen extends ScreenAdapter {
 
             gameInterface = new GameInterface(
                 gameLoop, uiViewport, gameRenderer,
-                interactionService.getDragAndDropManager(), game, this,
+                interactionService.getDragAndDropManager(),
+                () -> game.setScreen(new InventoryScreen(game, this, game.getGlobalInventory())),
                 () -> {
                     gameLoop = null;
                     show();
@@ -63,10 +60,6 @@ public class GameScreen extends ScreenAdapter {
                 },
                 () -> game.setScreen(new MainMenuScreen(game))
             );
-
-            PathType[] types = PathType.values();
-            this.activeMapType = types[com.badlogic.gdx.math.MathUtils.random(0, types.length - 1)];
-            PathGenerator.generate(gameLoop.getRoadPath(), activeMapType);
         }
 
         initInputProcessing();

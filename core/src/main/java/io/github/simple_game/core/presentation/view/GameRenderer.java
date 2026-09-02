@@ -14,7 +14,7 @@ import io.github.simple_game.core.presentation.view.renderer.EntityRenderer;
 import io.github.simple_game.core.presentation.view.renderer.HealthBarRenderer;
 import io.github.simple_game.core.presentation.view.renderer.WorldSpriteRenderer;
 import io.github.simple_game.core.service.GameLoop;
-import io.github.simple_game.core.service.InteractionService;
+import io.github.simple_game.core.presentation.input.InteractionService;
 
 public class GameRenderer {
     private final OrthographicCamera camera;

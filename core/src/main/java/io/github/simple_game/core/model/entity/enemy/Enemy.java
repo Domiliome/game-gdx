@@ -1,12 +1,9 @@
 package io.github.simple_game.core.model.entity.enemy;
 
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 import io.github.simple_game.core.model.entity.Entity;
 import io.github.simple_game.core.model.movement.MovementBehavior;
-import io.github.simple_game.core.service.CurrencyManager;
 
 /**
  * Абстрактный базовый класс для всех вражеских юнитов в игре.
@@ -25,7 +22,6 @@ public abstract class Enemy extends Entity {
     private float poisonDps = 0f;
     private float poisonTimer = 0f;
 
-    private Animation<TextureRegion> runAnimation;
     private float animationTime = 0f;
     private final Vector2 lastPosition = new Vector2();
     private float currentRotation = 0f;
@@ -36,18 +32,17 @@ public abstract class Enemy extends Entity {
         lastPosition.set(x, y);
     }
 
-    protected void initSprite(String texturePath, float visualScale) {
-        this.runAnimation = EnemySprites.runAnimation(texturePath);
+    protected void initSprite(float visualScale) {
         this.visualScale = visualScale;
     }
 
-    protected abstract String getSpritePath();
+    public abstract String getSpritePath();
 
     protected float getDefaultVisualScale() {
         return 1f;
     }
 
-    public void update(float deltaTime, CurrencyManager economy) {
+    public void update(float deltaTime) {
         if (!active) return;
 
         if (slowTimer > 0) {
@@ -58,7 +53,7 @@ public abstract class Enemy extends Entity {
         }
 
         if (poisonTimer > 0) {
-            takeDamage(poisonDps * deltaTime, economy);
+            takeDamage(poisonDps * deltaTime);
             if (!active) return;
             poisonTimer -= deltaTime;
             if (poisonTimer <= 0) {
@@ -72,30 +67,20 @@ public abstract class Enemy extends Entity {
 
         if (isActive()) {
             animationTime += deltaTime;
+            updateFacing();
         }
-
-        if (!active && health > 0) {
-            economy.decreaseLives(1);
-        }
-    }
-
-    @Override
-    public void update(float deltaTime) {
-        // Оставлен пустым, так как необходим перегруженный update с экономикой
     }
 
     /**
-     * Наносит врагу урон. Если здоровье падает до нуля или ниже,
-     * враг погибает, а игроку начисляется награда, зависящая от класса монстра.
+     * Наносит врагу урон. Если здоровье падает до нуля или ниже, враг погибает.
+     * Награда и лут начисляются игровым циклом при удалении с карты.
      */
-    public void takeDamage(float damage, CurrencyManager economy) {
+    public void takeDamage(float damage) {
         if (!active) return;
 
         this.health -= damage;
         if (this.health <= 0) {
             this.active = false;
-            // Динамически зачисляем золото на основе параметров подкласса (Гоблин/Зомби/Орк)
-            economy.addGold(goldReward);
         }
     }
 
@@ -138,16 +123,7 @@ public abstract class Enemy extends Entity {
         this.movementBehavior = behavior;
     }
 
-    public TextureRegion getCurrentFrame() {
-        if (runAnimation == null || !isActive()) {
-            return null;
-        }
-
-        TextureRegion frame = runAnimation.getKeyFrame(animationTime);
-        if (frame == null) {
-            return null;
-        }
-
+    private void updateFacing() {
         float deltaX = position.x - lastPosition.x;
         float deltaY = position.y - lastPosition.y;
 
@@ -166,7 +142,10 @@ public abstract class Enemy extends Entity {
         }
 
         lastPosition.set(position.x, position.y);
-        return frame;
+    }
+
+    public float getAnimationTime() {
+        return animationTime;
     }
 
     public float getCurrentRotation() {

@@ -13,8 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
-import io.github.simple_game.core.Main;
-import io.github.simple_game.core.presentation.screen.GameScreen;
 import io.github.simple_game.core.service.CurrencyManager;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.WaveManager;
@@ -29,7 +27,7 @@ public class TopStatusBar extends Table {
     private final Texture backpackTex, startTex, pauseTex, backgroundTex;
     private final TextureRegionDrawable startDrawable, pauseDrawable;
 
-    public TopStatusBar(GameLoop gameLoop, final Main game, final GameScreen gameScreen) {
+    public TopStatusBar(GameLoop gameLoop, Runnable openInventory) {
         this.gameLoop = gameLoop;
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -75,8 +73,7 @@ public class TopStatusBar extends Table {
         bagImage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent e, float x, float y) {
-                game.setScreen(new io.github.simple_game.core.presentation.screen.InventoryScreen(
-                        game, gameScreen, TopStatusBar.this.gameLoop));
+                openInventory.run();
             }
         });
 

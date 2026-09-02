@@ -18,7 +18,7 @@ import com.badlogic.gdx.utils.Array;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 import io.github.simple_game.core.presentation.GameViewport;
 import io.github.simple_game.core.presentation.view.GameRenderer;
-import io.github.simple_game.core.service.DragAndDropManager;
+import io.github.simple_game.core.presentation.input.DragAndDropManager;
 import io.github.simple_game.core.service.GameLoop;
 import io.github.simple_game.core.service.ShopService;
 

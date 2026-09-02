@@ -12,6 +12,7 @@ public class PathGenerator {
     /** Минимальное расстояние между осями параллельных участков (1 клетка земли между дорогами). */
     private static final int MIN_TRACK_GAP = 2;
     private static final int MAX_ATTEMPTS = 32;
+    private static final int OTHER_STRAIGHT_COUNT = 3;
 
     private static int centerCol() {
         return GameGrid.columnCount() / 2;
@@ -57,8 +58,46 @@ public class PathGenerator {
 
     private static void assignStraightTextures(RoadPath path) {
         int[][] variants = new int[GameGrid.columnCount()][GameGrid.rowCount()];
-        GameGrid.fillStraightVariants(variants, path);
+        fillStraightVariants(variants, path);
         path.setStraightVariants(variants);
+    }
+
+    private static void fillStraightVariants(int[][] variant, RoadPath roadPath) {
+        int cols = variant.length;
+        int rows = variant[0].length;
+        boolean[][] visited = new boolean[cols][rows];
+
+        for (int i = 0; i < roadPath.getPointCount() - 1; i++) {
+            var p1 = roadPath.getPoint(i);
+            var p2 = roadPath.getPoint(i + 1);
+            int c1 = GameGrid.worldToCol(p1.x);
+            int r1 = GameGrid.worldToRow(p1.y);
+            int c2 = GameGrid.worldToCol(p2.x);
+            int r2 = GameGrid.worldToRow(p2.y);
+
+            if (r1 == r2 && c1 != c2) {
+                int step = Integer.compare(c2, c1);
+                for (int c = c1; c != c2 + step; c += step) {
+                    markStraightVariant(variant, visited, c, r1, cols, rows);
+                }
+            } else if (c1 == c2 && r1 != r2) {
+                int step = Integer.compare(r2, r1);
+                for (int r = r1; r != r2 + step; r += step) {
+                    markStraightVariant(variant, visited, c1, r, cols, rows);
+                }
+            }
+        }
+    }
+
+    private static void markStraightVariant(int[][] variant, boolean[][] visited,
+                                            int col, int row, int cols, int rows) {
+        if (col < 0 || col >= cols || row < 0 || row >= rows || visited[col][row]) {
+            return;
+        }
+        visited[col][row] = true;
+        if (MathUtils.randomBoolean(0.7f)) {
+            variant[col][row] = MathUtils.random(1, OTHER_STRAIGHT_COUNT);
+        }
     }
 
     private static int topPathRow() {

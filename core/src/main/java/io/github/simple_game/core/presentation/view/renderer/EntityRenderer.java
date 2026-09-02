@@ -29,7 +29,8 @@ public class EntityRenderer {
         for (Enemy enemy : gameLoop.getEnemies()) {
             if (!enemy.isActive()) continue;
 
-            TextureRegion frame = enemy.getCurrentFrame();
+            TextureRegion frame = EnemySprites.runAnimation(enemy.getSpritePath())
+                    .getKeyFrame(enemy.getAnimationTime());
             if (frame == null) continue;
 
             float size = BASE_VISUAL_SIZE * enemy.getVisualScale();
