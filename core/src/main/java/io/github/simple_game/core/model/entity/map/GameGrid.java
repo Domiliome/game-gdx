@@ -169,10 +169,6 @@ public class GameGrid {
             }
         }
 
-        if (isRoadCell(col, row, roadPath)) {
-            return false;
-        }
-
-        return true;
+        return !isRoadCell(col, row, roadPath);
     }
 }
