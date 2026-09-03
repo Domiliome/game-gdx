@@ -8,12 +8,12 @@ import java.util.Random;
 import io.github.simple_game.core.model.entity.tower.TowerType;
 
 /**
- * Сервис магазина: 3 случайных разных башни, обновление после покупки или за 20G.
+ * Сервис магазина: 3 случайных разных башни, обновление после покупки или за {@link #REFRESH_COST}G.
  */
 public class ShopService {
 
     public static final int SLOT_COUNT = 3;
-    public static final int REFRESH_COST = 20;
+    public static final int REFRESH_COST = Economy.SHOP_REFRESH_COST;
 
     private final Random random = new Random();
     private final TowerType[] currentSlots = new TowerType[SLOT_COUNT];

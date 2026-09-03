@@ -5,7 +5,7 @@ public class HeavyOrc extends Enemy {
         super(x, y);
         this.health = 300f * hpMod;
         this.speed = 40f * speedMod;
-        this.goldReward = 60;
+        this.goldReward = 40;
         this.tier = EnemyTier.TIER_3_HEAVY;
         initSprite(getDefaultVisualScale());
     }

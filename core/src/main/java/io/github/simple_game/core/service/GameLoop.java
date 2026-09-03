@@ -30,7 +30,7 @@ public class GameLoop implements CombatWorld {
         this.roadPath = new RoadPath();
         this.entityManager = new EntityManager();
         this.waveManager = new WaveManager(roadPath);
-        this.currencyManager = new CurrencyManager(10000, 20);
+        this.currencyManager = new CurrencyManager(Economy.STARTING_GOLD, Economy.STARTING_LIVES);
         this.gameGrid = new GameGrid(roadPath);
         this.shopService = new ShopService();
         this.inventoryManager = inventoryManager;
@@ -43,8 +43,13 @@ public class GameLoop implements CombatWorld {
         if (isVictory) return;
         if (isPaused) return;
 
+        boolean waveWasActive = waveManager.isWaveActive();
         waveManager.update(deltaTime, entityManager.getEnemies());
         entityManager.updateEntities(deltaTime, currencyManager, inventoryManager);
+
+        if (waveWasActive && !waveManager.isWaveActive()) {
+            currencyManager.addGold(Economy.waveClearBonus(waveManager.getCurrentWaveNumber()));
+        }
 
         if (waveManager.getCurrentWaveNumber() == 20 && !waveManager.isWaveActive() && entityManager.getEnemies().size == 0) {
             this.isVictory = true;
@@ -57,6 +62,15 @@ public class GameLoop implements CombatWorld {
             item.applyEffect(tower);
         }
         entityManager.addTower(tower);
+    }
+
+    public void sellSelectedTower() {
+        if (selectedTower == null) {
+            return;
+        }
+        currencyManager.addGold(selectedTower.getSellRefund());
+        entityManager.removeTower(selectedTower);
+        selectedTower = null;
     }
 
     public boolean isPaused() { return isPaused; }

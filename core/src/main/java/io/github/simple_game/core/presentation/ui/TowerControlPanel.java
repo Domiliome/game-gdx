@@ -40,7 +40,12 @@ public class TowerControlPanel extends Table {
         upgradeBtn.addListener(new ClickListener() {
             @Override public void clicked(InputEvent e, float x, float y) {
                 Tower sel = gameLoop.getSelectedTower();
-                if (sel != null && gameLoop.getCurrencyManager().spendGold(sel.getUpgradeCost())) {
+                if (sel == null || !sel.canUpgrade()) {
+                    return;
+                }
+                int cost = sel.getUpgradeCost();
+                if (gameLoop.getCurrencyManager().spendGold(cost)) {
+                    sel.addInvestedGold(cost);
                     sel.tryUpgrade();
                 }
             }
@@ -49,17 +54,7 @@ public class TowerControlPanel extends Table {
         sellBtn = new TextButton(" SELL ", sellStyle);
         sellBtn.addListener(new ClickListener() {
             @Override public void clicked(InputEvent e, float x, float y) {
-                Tower sel = gameLoop.getSelectedTower();
-                if (sel != null) {
-                    int sellRefund = (sel.getType().getCost() * 20) / 100;
-
-                    gameLoop.getCurrencyManager().addGold(sellRefund);
-
-                    sel.onRemoved();
-                    gameLoop.getTowers().removeValue(sel, true);
-
-                    gameLoop.setSelectedTower(null);
-                }
+                gameLoop.sellSelectedTower();
             }
         });
 
@@ -80,13 +75,18 @@ public class TowerControlPanel extends Table {
         }
 
         this.setVisible(true);
-        upgradeBtn.setText("UPGRADE: " + sel.getUpgradeCost() + "G");
+        if (sel.canUpgrade()) {
+            upgradeBtn.setText("UPGRADE: " + sel.getUpgradeCost() + "G");
+            int currentGold = gameLoop.getCurrencyManager().getGold();
+            upgradeBtn.getLabel().setColor(currentGold >= sel.getUpgradeCost() ? Color.WHITE : Color.RED);
+            upgradeBtn.setDisabled(false);
+        } else {
+            upgradeBtn.setText("MAX LEVEL");
+            upgradeBtn.getLabel().setColor(Color.GRAY);
+            upgradeBtn.setDisabled(true);
+        }
 
-        int refund = (sel.getType().getCost() * 20) / 100;
-        sellBtn.setText("SELL: +" + refund + "G");
-
-        int currentGold = gameLoop.getCurrencyManager().getGold();
-        upgradeBtn.getLabel().setColor(currentGold >= sel.getUpgradeCost() ? Color.WHITE : Color.RED);
+        sellBtn.setText("SELL: +" + sel.getSellRefund() + "G");
     }
 
     public void dispose() {

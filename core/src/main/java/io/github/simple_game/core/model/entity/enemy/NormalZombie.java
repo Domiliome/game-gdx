@@ -5,7 +5,7 @@ public class NormalZombie extends Enemy {
         super(x, y);
         this.health = 100f * hpMod;
         this.speed = 70f * speedMod;
-        this.goldReward = 25;
+        this.goldReward = 18;
         this.tier = EnemyTier.TIER_2_NORMAL;
         initSprite(getDefaultVisualScale());
     }

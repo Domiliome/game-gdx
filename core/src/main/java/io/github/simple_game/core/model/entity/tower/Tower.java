@@ -30,16 +30,33 @@ public abstract class Tower extends Entity {
 
     protected float animationTime = 0f;
     protected boolean isInitializing = true;
+    private int goldInvested;
 
     public Tower(float x, float y, TowerType type, CombatWorld world) {
         super(x, y);
         this.type = type;
         this.world = world;
+        this.goldInvested = type.getCost();
     }
 
     public abstract void tryUpgrade();
     public abstract int getUpgradeCost();
     protected abstract void shoot(Array<Projectile> projectilesToSpawn);
+
+    public void addInvestedGold(int amount) {
+        if (amount > 0) {
+            goldInvested += amount;
+        }
+    }
+
+    /** Половина вложенного золота (покупка + апгрейды). */
+    public int getSellRefund() {
+        return goldInvested / 2;
+    }
+
+    public boolean canUpgrade() {
+        return currentLevel < maxLevel;
+    }
 
     public void update(float deltaTime, Array<Enemy> enemies, Array<Projectile> projectilesToSpawn) {
         if (baseDamage == 0 && damage > 0) {
@@ -109,6 +126,7 @@ public abstract class Tower extends Entity {
     public float getAttackCooldown() { return attackCooldown; }
     public TowerType getType() { return type; }
     public int getCurrentLevel() { return currentLevel; }
+    public int getMaxLevel() { return maxLevel; }
 
     public boolean isInitializing() { return isInitializing; }
 

@@ -9,7 +9,7 @@ public class FastGoblin extends Enemy {
         super(x, y);
         this.health = 50f * hpMod;
         this.speed = 130f * speedMod;
-        this.goldReward = 15;
+        this.goldReward = 8;
         this.tier = EnemyTier.TIER_1_LIGHT;
         initSprite(1f);
     }

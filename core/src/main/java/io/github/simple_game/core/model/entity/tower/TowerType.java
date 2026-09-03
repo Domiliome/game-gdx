@@ -9,12 +9,12 @@ import io.github.simple_game.core.model.CombatWorld;
  * Чтобы добавить башню: создай класс и добавь константу сюда.
  */
 public enum TowerType {
-    ARCHER(100, "towers/archer.png", 400f, ArcherTower::new),
-    CANNON(250, "towers/cannon.png", 250f, CannonTower::new),
-    MAGIC(200, "towers/magic.png", 320f, MagicTower::new),
-    POISON(175, "towers/poison.png", 280f, PoisonTower::new),
+    ARCHER(80, "towers/archer.png", 400f, ArcherTower::new),
+    CANNON(225, "towers/cannon.png", 250f, CannonTower::new),
+    MAGIC(165, "towers/magic.png", 320f, MagicTower::new),
+    POISON(130, "towers/poison.png", 280f, PoisonTower::new),
     /** Два столба в радиусе связи образуют молнию между собой. */
-    TESLA(150, "towers/tesla.png", 0f, TeslaTower::new);
+    TESLA(90, "towers/tesla.png", 0f, TeslaTower::new);
 
     private final int cost;
     private final String idleTexturePath;
